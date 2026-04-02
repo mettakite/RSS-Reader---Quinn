@@ -1,0 +1,3731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RSS Reader</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='4' fill='%230f4d2e'/><path d='M6 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM2 10a9 9 0 0 1 9 9h-2a7 7 0 0 0-7-7v-2zm0-4a13 13 0 0 1 13 13h-2A11 11 0 0 0 2 8V6z' fill='white'/></svg>">
+  <style>
+/* ============================================================
+   RSS Reader — Gatsby-inspired Design System
+   ============================================================ */
+
+:root {
+  --gatsby-purple: #0f4d2e;
+  --gatsby-purple-dark: #0a3620;
+  --gatsby-purple-light: #0f4d2e;
+  --gatsby-white: #ffffff;
+  --gatsby-off-white: #fafafa;
+  --gatsby-light-gray: #f5f5f5;
+  --gatsby-mid-gray: #e0e0e0;
+  --gatsby-text: #232129;
+  --gatsby-text-muted: #78757a;
+  --gatsby-text-light: #b9b9b9;
+  --gatsby-accent: #c45e00;
+  --gatsby-green: #2d9c66;
+  --gatsby-red: #c0392b;
+  --sidebar-width: 280px;
+  --article-list-width: 380px;
+  --header-height: 56px;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --radius: 8px;
+  --radius-sm: 4px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.05);
+  --transition: 150ms ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  color: var(--gatsby-text);
+  background: var(--gatsby-off-white);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ── Layout ────────────────────────────────────────────────── */
+
+#app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+
+#header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  background: var(--gatsby-purple);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(15,77,46,0.3);
+}
+
+#header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+#header-logo svg {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+#header-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.3px;
+}
+
+#header-search {
+  flex: 1;
+  max-width: 400px;
+  margin-left: auto;
+  position: relative;
+}
+
+#search-input {
+  width: 100%;
+  padding: 7px 12px 7px 36px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: var(--transition);
+}
+
+#search-input::placeholder { color: rgba(255,255,255,0.6); }
+#search-input:focus {
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,0.5);
+}
+
+#search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,0.7);
+  pointer-events: none;
+}
+
+#header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.header-btn {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius-sm);
+  color: white;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-btn:hover {
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,0.35);
+}
+
+.header-btn.active {
+  background: rgba(255,255,255,0.3);
+}
+
+/* ── Sidebar ────────────────────────────────────────────────── */
+
+#sidebar {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--gatsby-white);
+  border-right: 1px solid var(--gatsby-mid-gray);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 50;
+}
+
+#sidebar-feeds {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+#sidebar-feeds::-webkit-scrollbar { width: 4px; }
+#sidebar-feeds::-webkit-scrollbar-track { background: transparent; }
+#sidebar-feeds::-webkit-scrollbar-thumb { background: var(--gatsby-mid-gray); border-radius: 2px; }
+
+.sidebar-section-header {
+  padding: 10px 16px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gatsby-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-section-header button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gatsby-purple);
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 2px;
+  border-radius: 3px;
+  transition: var(--transition);
+}
+
+.sidebar-section-header button:hover {
+  background: var(--gatsby-light-gray);
+}
+
+.feed-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  gap: 10px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background var(--transition);
+  position: relative;
+  border-left: 3px solid transparent;
+}
+
+.feed-item:hover { background: var(--gatsby-light-gray); }
+
+.feed-item.active {
+  background: rgba(15,77,46,0.08);
+  border-left-color: var(--gatsby-purple);
+}
+
+.feed-item.active .feed-name { color: var(--gatsby-purple); font-weight: 600; }
+
+.feed-favicon {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.feed-favicon-placeholder {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  background: var(--gatsby-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: white;
+  font-weight: 700;
+}
+
+.feed-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--gatsby-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feed-count {
+  font-size: 11px;
+  background: var(--gatsby-purple);
+  color: white;
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-weight: 600;
+  min-width: 22px;
+  text-align: center;
+}
+
+.feed-item-actions {
+  display: none;
+  gap: 4px;
+}
+
+.feed-item:hover .feed-item-actions { display: flex; }
+
+.feed-action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gatsby-text-muted);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 12px;
+  transition: var(--transition);
+}
+
+.feed-action-btn:hover { color: var(--gatsby-red); background: rgba(192,57,43,0.08); }
+
+/* ── Sidebar Bottom ─────────────────────────────────────────── */
+
+#sidebar-bottom {
+  border-top: 1px solid var(--gatsby-mid-gray);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--gatsby-text-muted);
+}
+
+.sidebar-stat strong {
+  color: var(--gatsby-text);
+  font-weight: 600;
+}
+
+.adblock-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--gatsby-light-gray);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.adblock-toggle span { display: flex; align-items: center; gap: 6px; }
+
+.toggle-switch {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--gatsby-mid-gray);
+  position: relative;
+  transition: background var(--transition);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggle-switch.on { background: var(--gatsby-green); }
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  top: 2px;
+  left: 2px;
+  transition: transform var(--transition);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch.on::after { transform: translateX(16px); }
+
+/* ── Main Content ───────────────────────────────────────────── */
+
+#main {
+  margin-left: var(--sidebar-width);
+  margin-top: var(--header-height);
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  height: calc(100vh - var(--header-height));
+}
+
+/* ── Feed List Panel ────────────────────────────────────────── */
+
+#feed-list-panel {
+  width: var(--article-list-width);
+  flex-shrink: 0;
+  border-right: 1px solid var(--gatsby-mid-gray);
+  display: flex;
+  flex-direction: column;
+  background: var(--gatsby-white);
+  overflow: hidden;
+}
+
+#feed-list-header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--gatsby-mid-gray);
+  background: var(--gatsby-white);
+}
+
+#feed-list-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gatsby-text);
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+#feed-list-meta {
+  font-size: 12px;
+  color: var(--gatsby-text-muted);
+}
+
+#feed-list-toolbar {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--gatsby-mid-gray);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.toolbar-btn {
+  background: none;
+  border: 1px solid var(--gatsby-mid-gray);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--gatsby-text-muted);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-btn:hover {
+  border-color: var(--gatsby-purple);
+  color: var(--gatsby-purple);
+}
+
+.toolbar-btn.active {
+  background: var(--gatsby-purple);
+  border-color: var(--gatsby-purple);
+  color: white;
+}
+
+#articles-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+#articles-list::-webkit-scrollbar { width: 4px; }
+#articles-list::-webkit-scrollbar-track { background: transparent; }
+#articles-list::-webkit-scrollbar-thumb { background: var(--gatsby-mid-gray); border-radius: 2px; }
+
+/* ── Article Card ───────────────────────────────────────────── */
+
+.article-card {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--gatsby-light-gray);
+  cursor: pointer;
+  transition: background var(--transition);
+  position: relative;
+}
+
+.article-card:hover { background: rgba(15,77,46,0.04); }
+
+.article-card.active {
+  background: rgba(15,77,46,0.08);
+  border-left: 3px solid var(--gatsby-purple);
+  padding-left: 17px;
+}
+
+.article-card.unread .article-title {
+  font-weight: 700;
+}
+
+.article-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.article-source {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gatsby-purple);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.article-date {
+  font-size: 11px;
+  color: var(--gatsby-text-light);
+}
+
+.article-title {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--gatsby-text);
+  margin-bottom: 6px;
+  font-weight: 400;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.article-snippet {
+  font-size: 12px;
+  color: var(--gatsby-text-muted);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.article-thumbnail {
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  float: right;
+  margin-left: 12px;
+  margin-bottom: 4px;
+}
+
+.unread-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gatsby-purple);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Article Reader Panel ───────────────────────────────────── */
+
+#article-reader {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--gatsby-white);
+}
+
+#reader-toolbar {
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--gatsby-mid-gray);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gatsby-white);
+}
+
+#reader-back-btn {
+  background: none;
+  border: 1px solid var(--gatsby-mid-gray);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--gatsby-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+#reader-back-btn:hover { border-color: var(--gatsby-purple); color: var(--gatsby-purple); }
+
+#reader-open-btn {
+  margin-left: auto;
+  background: var(--gatsby-purple);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+#reader-open-btn:hover { background: var(--gatsby-purple-dark); }
+
+#reader-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 48px;
+  max-width: 780px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+#reader-content::-webkit-scrollbar { width: 5px; }
+#reader-content::-webkit-scrollbar-thumb { background: var(--gatsby-mid-gray); border-radius: 3px; }
+
+#reader-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--gatsby-text-muted);
+  gap: 16px;
+  padding: 40px;
+}
+
+#reader-placeholder svg { opacity: 0.3; }
+
+#reader-placeholder p {
+  font-size: 15px;
+  text-align: center;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+/* ── Reader Typography ──────────────────────────────────────── */
+
+.reader-header {
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid var(--gatsby-light-gray);
+}
+
+.reader-source-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.reader-source-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gatsby-purple);
+  background: rgba(15,77,46,0.1);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.reader-date {
+  font-size: 12px;
+  color: var(--gatsby-text-muted);
+}
+
+.reader-title {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.5px;
+  color: var(--gatsby-text);
+  margin-bottom: 12px;
+}
+
+.reader-author {
+  font-size: 13px;
+  color: var(--gatsby-text-muted);
+}
+
+.reader-hero {
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  margin: 20px 0 28px;
+}
+
+.reader-body {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--gatsby-text);
+}
+
+.reader-body p { margin-bottom: 1.2em; }
+.reader-body h1, .reader-body h2, .reader-body h3 {
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 1.5em 0 0.6em;
+  color: var(--gatsby-text);
+}
+.reader-body h1 { font-size: 1.6em; }
+.reader-body h2 { font-size: 1.3em; }
+.reader-body h3 { font-size: 1.1em; }
+.reader-body a { color: var(--gatsby-purple); text-decoration: none; }
+.reader-body a:hover { text-decoration: underline; }
+.reader-body img {
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  margin: 12px 0;
+}
+.reader-body blockquote {
+  border-left: 4px solid var(--gatsby-purple);
+  padding: 8px 20px;
+  margin: 16px 0;
+  color: var(--gatsby-text-muted);
+  font-style: italic;
+  background: var(--gatsby-light-gray);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.reader-body code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--gatsby-light-gray);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--gatsby-purple-dark);
+}
+.reader-body pre {
+  background: #1a1523;
+  color: #e8e6f0;
+  padding: 16px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  margin: 16px 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.reader-body pre code { background: none; padding: 0; color: inherit; }
+.reader-body ul, .reader-body ol {
+  padding-left: 24px;
+  margin-bottom: 1.2em;
+}
+.reader-body li { margin-bottom: 0.3em; }
+
+/* ── YouTube Extension Cards ────────────────────────────────── */
+
+.yt-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--gatsby-light-gray);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.yt-card:hover { background: rgba(255,0,0,0.04); }
+
+.yt-card.active { background: rgba(255,0,0,0.07); border-left: 3px solid #ff0000; padding-left: 17px; }
+
+.yt-thumbnail-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 100px;
+  height: 56px;
+}
+
+.yt-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--gatsby-light-gray);
+}
+
+.yt-play-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.3);
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.yt-card:hover .yt-play-icon { opacity: 1; }
+
+.yt-info { flex: 1; min-width: 0; }
+
+.yt-channel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #cc0000;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 3px;
+}
+
+.yt-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--gatsby-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.yt-date { font-size: 11px; color: var(--gatsby-text-light); }
+
+/* ── Reader YouTube Embed ───────────────────────────────────── */
+
+.yt-embed-wrap {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 20px 0 28px;
+  background: #000;
+}
+
+.yt-embed-wrap iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: none;
+}
+
+/* ── Modal ──────────────────────────────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+}
+
+.modal-header {
+  background: var(--gatsby-purple);
+  color: white;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  opacity: 0.8;
+  line-height: 1;
+  transition: opacity var(--transition);
+}
+
+.modal-close:hover { opacity: 1; }
+
+.modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gatsby-text-muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--gatsby-mid-gray);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--gatsby-text);
+  outline: none;
+  transition: var(--transition);
+  font-family: var(--font-sans);
+}
+
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--gatsby-purple);
+  box-shadow: 0 0 0 3px rgba(15,77,46,0.12);
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--gatsby-light-gray);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn {
+  padding: 9px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: var(--transition);
+}
+
+.btn-primary {
+  background: var(--gatsby-purple);
+  color: white;
+}
+
+.btn-primary:hover { background: var(--gatsby-purple-dark); }
+
+.btn-ghost {
+  background: none;
+  border: 1px solid var(--gatsby-mid-gray);
+  color: var(--gatsby-text-muted);
+}
+
+.btn-ghost:hover { border-color: var(--gatsby-purple); color: var(--gatsby-purple); }
+
+/* ── Toast ──────────────────────────────────────────────────── */
+
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  background: var(--gatsby-text);
+  color: white;
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-md);
+  animation: slide-in 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast.success { background: var(--gatsby-green); }
+.toast.error { background: var(--gatsby-red); }
+.toast.warning { background: var(--gatsby-accent); }
+
+@keyframes slide-in {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ── Spinner / Loading ──────────────────────────────────────── */
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--gatsby-mid-gray);
+  border-top-color: var(--gatsby-purple);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-row {
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--gatsby-text-muted);
+  font-size: 13px;
+}
+
+/* ── Empty State ────────────────────────────────────────────── */
+
+.empty-state {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--gatsby-text-muted);
+}
+
+.empty-state svg { margin: 0 auto 16px; opacity: 0.3; display: block; }
+.empty-state h3 { font-size: 16px; margin-bottom: 8px; color: var(--gatsby-text); }
+.empty-state p { font-size: 13px; line-height: 1.5; }
+
+/* ── Adblock Banner ─────────────────────────────────────────── */
+
+.adblock-badge {
+  font-size: 10px;
+  background: var(--gatsby-green);
+  color: white;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.adblock-stats {
+  font-size: 11px;
+  color: var(--gatsby-green);
+  font-weight: 600;
+}
+
+/* ── Extension Tabs ─────────────────────────────────────────── */
+
+.ext-tab-bar {
+  display: flex;
+  border-bottom: 2px solid var(--gatsby-mid-gray);
+  padding: 0 16px;
+  gap: 0;
+  background: var(--gatsby-white);
+  overflow-x: auto;
+}
+
+.ext-tab {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gatsby-text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--transition);
+}
+
+.ext-tab:hover { color: var(--gatsby-text); }
+
+.ext-tab.active {
+  color: var(--gatsby-purple);
+  border-bottom-color: var(--gatsby-purple);
+}
+
+/* ── Responsive / Misc ──────────────────────────────────────── */
+
+.hidden { display: none !important; }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.tag-rss { background: rgba(255,102,0,0.1); color: #ff6600; }
+.tag-youtube { background: rgba(255,0,0,0.1); color: #cc0000; }
+.tag-discord { background: rgba(88,101,242,0.1); color: #5865f2; }
+.tag-spotify { background: rgba(29,185,84,0.1); color: #1db954; }
+.tag-applemusic { background: rgba(252,60,68,0.1); color: #fc3c44; }
+.tag-threads { background: rgba(0,0,0,0.07); color: #000; }
+.tag-instagram { background: rgba(225,48,108,0.1); color: #e1306c; }
+
+/* ── Spotify Cards ──────────────────────────────────────────── */
+
+.spotify-card {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gatsby-mid-gray);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.spotify-card:hover { background: rgba(29,185,84,0.05); }
+.spotify-card.active { background: rgba(29,185,84,0.1); border-left: 3px solid #1db954; }
+.spotify-card.unread .spotify-title { font-weight: 700; }
+
+.spotify-card-inner { display: flex; gap: 12px; align-items: flex-start; }
+.spotify-thumb {
+  width: 52px; height: 52px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.spotify-thumb-placeholder {
+  width: 52px; height: 52px;
+  border-radius: 6px;
+  background: #f5f5f5;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.spotify-info { flex: 1; min-width: 0; }
+.spotify-feed-name { font-size: 11px; color: #1db954; font-weight: 600; margin-bottom: 2px; }
+.spotify-title { font-size: 13px; font-weight: 600; color: var(--gatsby-text); line-height: 1.35; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spotify-snippet { font-size: 12px; color: var(--gatsby-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spotify-date { font-size: 11px; color: var(--gatsby-text-light); margin-top: 3px; }
+
+/* ── Apple Music Cards ──────────────────────────────────────── */
+
+.am-card {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gatsby-mid-gray);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.am-card:hover { background: rgba(252,60,68,0.04); }
+.am-card.active { background: rgba(252,60,68,0.1); border-left: 3px solid #fc3c44; }
+.am-card.unread .am-title { font-weight: 700; }
+
+.am-card-inner { display: flex; gap: 12px; align-items: flex-start; }
+.am-thumb {
+  width: 52px; height: 52px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.am-thumb-placeholder {
+  width: 52px; height: 52px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.am-info { flex: 1; min-width: 0; }
+.am-feed-name { font-size: 11px; color: #fc3c44; font-weight: 600; margin-bottom: 2px; }
+.am-title { font-size: 13px; font-weight: 600; color: var(--gatsby-text); line-height: 1.35; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.am-snippet { font-size: 12px; color: var(--gatsby-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.am-date { font-size: 11px; color: var(--gatsby-text-light); margin-top: 3px; }
+
+/* ── Threads Cards ──────────────────────────────────────────── */
+
+.threads-card {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gatsby-mid-gray);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.threads-card:hover { background: rgba(0,0,0,0.03); }
+.threads-card.active { background: rgba(0,0,0,0.06); border-left: 3px solid #000; }
+.threads-card.unread .threads-text { font-weight: 600; }
+
+.threads-card-inner {}
+.threads-meta { display: flex; align-items: center; gap: 5px; margin-bottom: 6px; }
+.threads-handle { font-size: 12px; font-weight: 700; color: var(--gatsby-text); }
+.threads-dot { color: var(--gatsby-text-light); font-size: 12px; }
+.threads-date { font-size: 12px; color: var(--gatsby-text-muted); }
+.threads-text { font-size: 13px; color: var(--gatsby-text); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.threads-img { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 180px; object-fit: cover; }
+
+/* ── Instagram Cards ────────────────────────────────────────── */
+
+.ig-card {
+  border-bottom: 1px solid var(--gatsby-mid-gray);
+  cursor: pointer;
+  transition: background var(--transition);
+  overflow: hidden;
+}
+.ig-card:hover { background: rgba(225,48,108,0.03); }
+.ig-card.active { background: rgba(225,48,108,0.07); border-left: 3px solid #e1306c; }
+
+.ig-photo-wrap { width: 100%; aspect-ratio: 1; overflow: hidden; }
+.ig-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ig-card-body { padding: 10px 14px 12px; }
+.ig-meta { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+.ig-handle { font-size: 12px; font-weight: 700; color: var(--gatsby-text); }
+.ig-dot { color: var(--gatsby-text-light); }
+.ig-date { font-size: 11px; color: var(--gatsby-text-muted); }
+.ig-caption { font-size: 13px; color: var(--gatsby-text); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Scrollbar global */
+* { scrollbar-width: thin; scrollbar-color: var(--gatsby-mid-gray) transparent; }
+
+/* ── Resize Handles ─────────────────────────────────────────── */
+
+.resize-handle {
+  flex-shrink: 0;
+  width: 5px;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 120ms ease;
+  z-index: 10;
+  position: relative;
+}
+
+.resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 1px;
+  width: 3px;
+  background: transparent;
+  border-radius: 2px;
+  transition: background 120ms ease;
+}
+
+.resize-handle:hover::after,
+.resize-handle.dragging::after {
+  background: var(--gatsby-purple-light);
+}
+
+/* Sidebar resize handle — fixed position to match sidebar */
+#sidebar-resize-handle {
+  position: fixed;
+  top: var(--header-height);
+  bottom: 0;
+  left: calc(var(--sidebar-width) - 2px);
+  width: 5px;
+  cursor: col-resize;
+  z-index: 60;
+  background: transparent;
+  transition: background 120ms ease;
+}
+
+#sidebar-resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 1px;
+  width: 3px;
+  background: transparent;
+  border-radius: 2px;
+  transition: background 120ms ease;
+}
+
+#sidebar-resize-handle:hover::after,
+#sidebar-resize-handle.dragging::after {
+  background: var(--gatsby-purple-light);
+}
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <header id="header">
+    <a id="header-logo" href="#">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="28" height="28" rx="6" fill="rgba(255,255,255,0.15)"/>
+        <path d="M14 4 L24 14 L14 24 L4 14 Z" fill="white" opacity="0.9"/>
+        <path d="M9 14 L14 9 L19 14 L14 19 Z" fill="#0a3620"/>
+        <circle cx="10" cy="18" r="1.5" fill="white"/>
+        <path d="M9 14.5 a5 5 0 0 1 4.5 4.5" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M9 11.5 a8 8 0 0 1 7.5 7.5" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span id="header-title">RSS Reader</span>
+    </a>
+    <div id="header-search">
+      <svg id="search-icon" viewBox="0 0 20 20" fill="currentColor" width="15" height="15">
+        <path fill-rule="evenodd" d="M8 4a4 4 0 1 0 0 8A4 4 0 0 0 8 4zM2 8a6 6 0 1 1 10.89 3.476l4.817 4.817a1 1 0 0 1-1.414 1.414l-4.816-4.816A6 6 0 0 1 2 8z" clip-rule="evenodd"/>
+      </svg>
+      <input type="search" id="search-input" placeholder="Search articles…" autocomplete="off">
+    </div>
+    <div id="header-actions">
+      <button class="header-btn" id="refresh-btn" title="Refresh all feeds (R)">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M4 2a1 1 0 0 1 1 1v2.101a7.002 7.002 0 0 1 11.601 2.566 1 1 0 1 1-1.885.666A5.002 5.002 0 0 0 5.999 7H9a1 1 0 0 1 0 2H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm.008 9.057a1 1 0 0 1 1.276.61A5.002 5.002 0 0 0 14.001 13H11a1 1 0 1 1 0-2h5a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-2.101a7.002 7.002 0 0 1-11.601-2.566 1 1 0 0 1 .61-1.276z" clip-rule="evenodd"/></svg>
+        Refresh
+      </button>
+      <button class="header-btn" id="add-feed-btn" title="Add a new feed">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M10 5a1 1 0 0 1 1 1v3h3a1 1 0 1 1 0 2h-3v3a1 1 0 1 1-2 0v-3H6a1 1 0 1 1 0-2h3V6a1 1 0 0 1 1-1z" clip-rule="evenodd"/></svg>
+        Add Feed
+      </button>
+    </div>
+  </header>
+  <div id="sidebar-resize-handle" title="Drag to resize sidebar"></div>
+  <aside id="sidebar">
+    <div id="sidebar-feeds"><div class="loading-row"><div class="spinner"></div><span>Loading…</span></div></div>
+    <div id="sidebar-bottom">
+      <div class="adblock-toggle" id="adblock-toggle">
+        <span>
+          <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" style="color:#2d9c66"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0 0 10 1.944 11.954 11.954 0 0 0 17.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4z" clip-rule="evenodd"/></svg>
+          Ad Blocking <span class="adblock-badge">uBlock</span>
+        </span>
+        <div class="toggle-switch on" id="adblock-toggle-switch"></div>
+      </div>
+      <div class="sidebar-stat"><span>Blocked today</span><span class="adblock-stats" id="adblock-count">0 blocked</span></div>
+      <div class="sidebar-stat"><span>Feeds</span><strong id="total-feeds">0</strong></div>
+      <div class="sidebar-stat"><span>Articles cached</span><strong id="total-items">0</strong></div>
+    </div>
+  </aside>
+  <main id="main">
+    <div id="feed-list-panel">
+      <div id="feed-list-header">
+        <div id="feed-list-title">All Feeds</div>
+        <div id="feed-list-meta"></div>
+      </div>
+      <div id="feed-list-toolbar">
+        <button class="toolbar-btn active" id="filter-all">All</button>
+        <button class="toolbar-btn" id="filter-unread">
+          <svg viewBox="0 0 20 20" fill="currentColor" width="12" height="12"><circle cx="10" cy="10" r="4"/></svg> Unread
+        </button>
+        <button class="toolbar-btn" id="mark-all-read" style="margin-left:auto">
+          <svg viewBox="0 0 20 20" fill="currentColor" width="12" height="12"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 0 1 0 1.414l-8 8a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 1.414-1.414L8 12.586l7.293-7.293a1 1 0 0 1 1.414 0z" clip-rule="evenodd"/></svg>
+          Mark read
+        </button>
+      </div>
+      <div id="articles-list"></div>
+    </div>
+    <div class="resize-handle" id="article-list-resize-handle" title="Drag to resize article list"></div>
+    <div id="article-reader">
+      <div id="reader-toolbar">
+        <button id="reader-back-btn">
+          <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L5.414 9H17a1 1 0 1 1 0 2H5.414l4.293 4.293a1 1 0 0 1 0 1.414z" clip-rule="evenodd"/></svg>
+          Back
+        </button>
+        <a id="reader-open-btn" href="#" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M11 3a1 1 0 1 0 0 2h2.586l-6.293 6.293a1 1 0 1 0 1.414 1.414L15 6.414V9a1 1 0 1 0 2 0V4a1 1 0 0 0-1-1h-5z"/><path d="M5 5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3a1 1 0 1 0-2 0v3H5V7h3a1 1 0 0 0 0-2H5z"/></svg>
+          Open original
+        </a>
+      </div>
+      <div id="reader-placeholder">
+        <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2" width="80" height="80">
+          <rect x="8" y="16" width="64" height="48" rx="4"/>
+          <line x1="20" y1="32" x2="60" y2="32"/><line x1="20" y1="42" x2="60" y2="42"/><line x1="20" y1="52" x2="44" y2="52"/>
+          <circle cx="68" cy="12" r="3" fill="currentColor" stroke="none"/>
+          <path d="M60 12 a9 9 0 0 1 9 9" stroke-linecap="round"/>
+          <path d="M57 12 a12 12 0 0 1 12 12" stroke-linecap="round"/>
+        </svg>
+        <p>Select an article to read it here, or open it in your browser.</p>
+      </div>
+      <div id="reader-content" class="hidden"></div>
+    </div>
+  </main>
+</div>
+<div id="toast-container"></div>
+<script>/**
+ * AdBlock Engine — uBlock-style content filtering
+ * Parses EasyList-format filter rules and applies them to URLs and DOM elements.
+ */
+
+const AdBlock = (() => {
+  // ── State ───────────────────────────────────────────────────
+  let enabled = true;
+  let blockedCount = 0;
+
+  // Compiled rule sets
+  const networkRules = [];       // { regex, isException, domains, originDomains }
+  const cosmeticRules = new Map(); // domain → [selectors]
+  const genericCosmeticSelectors = [];
+
+  // ── Bundled Filter Rules (EasyList subset + extras) ─────────
+  // Format: standard uBlock/EasyList filter syntax
+  const BUNDLED_FILTERS = `
+! === Network Filters ===
+! Ad servers & tracking
+||doubleclick.net^
+||googlesyndication.com^
+||googleadservices.com^
+||adnxs.com^
+||advertising.com^
+||ads.yahoo.com^
+||ads.twitter.com^
+||ads.linkedin.com^
+||facebook.com/tr^
+||connect.facebook.net/en_US/fbevents.js
+||amazon-adsystem.com^
+||media.net^
+||outbrain.com^
+||taboola.com^
+||revcontent.com^
+||mgid.com^
+||zergnet.com^
+||sharethrough.com^
+||33across.com^
+||pubmatic.com^
+||rubiconproject.com^
+||openx.net^
+||casalemedia.com^
+||criteo.com^
+||criteo.net^
+||adroll.com^
+||moatads.com^
+||scorecardresearch.com^
+||quantserve.com^
+||chartbeat.com^
+||newrelic.com^
+||hotjar.com^
+||fullstory.com^
+||loggly.com^
+! Common ad paths
+/ads.js
+/ad.js
+/advertisement.js
+/analytics.js$script
+/tracking.js$script
+/pixel.js$script
+/banner-ads/
+/ad-banner/
+/adserver/
+/doubleclick/
+/adsense/
+! === Cosmetic Filters ===
+##.ad
+##.ads
+##.advertisement
+##.advertisements
+##.ad-banner
+##.ad-container
+##.ad-wrapper
+##.ad-slot
+##.ad-unit
+##.ad-block
+##.adsbygoogle
+##.google-ad
+##.google-ads
+##.dfp-ad
+##.dfp-slot
+##[id^="google_ads"]
+##[id^="ad_"]
+##[class^="ad_"]
+##[id*="advertisement"]
+##[class*="advertisement"]
+##.sidebar-ad
+##.banner-ad
+##.leaderboard-ad
+##.sticky-ad
+##.interstitial-ad
+##.promoted-post
+##.promoted-content
+##.sponsored-content
+##.native-ad
+##[data-ad-unit]
+##[data-ad-slot]
+##.widget-ads
+##.ad-footer
+##.ad-header
+##[class*="outbrain"]
+##[class*="taboola"]
+##[id*="taboola"]
+##[id*="outbrain"]
+`.trim();
+
+  // ── Parser ──────────────────────────────────────────────────
+
+  function parseFilters(filterText) {
+    const lines = filterText.split('\n');
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('!') || line.startsWith('[')) continue;
+
+      // Cosmetic rules: ##selector or domain##selector
+      if (line.includes('##')) {
+        const [domainPart, selector] = line.split('##', 2);
+        if (domainPart === '') {
+          // Generic cosmetic
+          genericCosmeticSelectors.push(selector.trim());
+        } else {
+          // Domain-specific cosmetic
+          const domains = domainPart.split(',').map(d => d.trim()).filter(Boolean);
+          for (const domain of domains) {
+            if (!cosmeticRules.has(domain)) cosmeticRules.set(domain, []);
+            cosmeticRules.get(domain).push(selector.trim());
+          }
+        }
+        continue;
+      }
+
+      // Network rules
+      parseNetworkRule(line);
+    }
+  }
+
+  function parseNetworkRule(rule) {
+    let isException = false;
+    let pattern = rule;
+
+    // Exception rules
+    if (pattern.startsWith('@@')) {
+      isException = true;
+      pattern = pattern.slice(2);
+    }
+
+    // Extract options after $
+    let options = {};
+    const dollarIdx = pattern.lastIndexOf('$');
+    if (dollarIdx > 0 && !pattern.endsWith('$')) {
+      const optStr = pattern.slice(dollarIdx + 1);
+      pattern = pattern.slice(0, dollarIdx);
+      for (const opt of optStr.split(',')) {
+        const [key, val] = opt.split('=');
+        options[key.replace('~', '!')] = val || true;
+      }
+    }
+
+    // Convert filter pattern to regex
+    let regexStr = pattern
+      .replace(/[.+?^{}()|[\]\\]/g, '\\$&') // escape special regex chars (not * or |)
+      .replace(/\*/g, '.*')                  // * → wildcard
+      .replace(/\^/g, '(?:[^a-zA-Z0-9.%-]|$)') // ^ → separator
+      .replace(/^\|\|/, '(?:https?:\\/\\/(?:[^/]+\\.)?)')  // || → domain anchor
+      .replace(/^\|/, '^')                   // | at start → start anchor
+      .replace(/\|$/, '$');                  // | at end → end anchor
+
+    try {
+      networkRules.push({
+        regex: new RegExp(regexStr, 'i'),
+        isException,
+        options
+      });
+    } catch (e) {
+      // Invalid regex, skip
+    }
+  }
+
+  // ── Core API ────────────────────────────────────────────────
+
+  function init() {
+    parseFilters(BUNDLED_FILTERS);
+    const savedEnabled = localStorage.getItem('adblock_enabled');
+    if (savedEnabled !== null) enabled = savedEnabled === 'true';
+    const savedCount = parseInt(localStorage.getItem('adblock_count') || '0', 10);
+    blockedCount = savedCount;
+    console.log(`[AdBlock] Loaded ${networkRules.length} network rules, ${genericCosmeticSelectors.length} cosmetic selectors`);
+  }
+
+  function isUrlBlocked(url) {
+    if (!enabled) return false;
+    if (!url) return false;
+
+    let blocked = false;
+    let exception = false;
+
+    for (const rule of networkRules) {
+      if (rule.regex.test(url)) {
+        if (rule.isException) exception = true;
+        else blocked = true;
+      }
+    }
+
+    if (exception) return false;
+
+    if (blocked) {
+      blockedCount++;
+      try { localStorage.setItem('adblock_count', String(blockedCount)); } catch(e) {}
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Sanitize HTML content — strips ad elements, removes tracking pixels,
+   * scrubs tracking query params from links, and cleans inline scripts.
+   */
+  function sanitizeHTML(html, sourceUrl) {
+    if (!enabled || !html) return html;
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Apply generic cosmetic filters
+    for (const selector of genericCosmeticSelectors) {
+      try {
+        doc.querySelectorAll(selector).forEach(el => {
+          blockedCount++;
+          el.remove();
+        });
+      } catch(e) {}
+    }
+
+    // Remove elements with ad-like attributes
+    const adPatterns = [
+      '[id*="ad_"]', '[id*="ads_"]', '[id*="advertisement"]', '[id*="google_ad"]',
+      '[class*="advertisement"]', '[class*="adsbygoogle"]',
+      'iframe[src*="doubleclick"]', 'iframe[src*="ads"]', 'iframe[src*="googlead"]',
+      'script[src*="ads"]', 'script[src*="analytics"]', 'script[src*="tracking"]',
+      'script[src*="pixel"]', 'script[src*="beacon"]',
+      'img[width="1"][height="1"]', 'img[src*="pixel"]', 'img[src*="tracking"]',
+      'img[src*="beacon"]'
+    ];
+
+    for (const pattern of adPatterns) {
+      try {
+        doc.querySelectorAll(pattern).forEach(el => {
+          blockedCount++;
+          el.remove();
+        });
+      } catch(e) {}
+    }
+
+    // Scrub tracking params from all links
+    const trackingParams = new Set([
+      'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+      'fbclid', 'gclid', 'msclkid', 'mc_eid', 'ref', 'referrer',
+      '_ga', 'yclid', 'wickedid', 'twclid'
+    ]);
+
+    doc.querySelectorAll('a[href]').forEach(a => {
+      try {
+        const url = new URL(a.href, sourceUrl);
+        let cleaned = false;
+        for (const param of trackingParams) {
+          if (url.searchParams.has(param)) {
+            url.searchParams.delete(param);
+            cleaned = true;
+          }
+        }
+        if (cleaned) a.href = url.toString();
+
+        // Block ad network links
+        if (isUrlBlocked(a.href)) {
+          a.removeAttribute('href');
+          a.style.cursor = 'default';
+        }
+      } catch(e) {}
+    });
+
+    // Remove tracking pixels in images
+    doc.querySelectorAll('img').forEach(img => {
+      const src = img.src || img.getAttribute('src') || '';
+      if (isUrlBlocked(src)) {
+        img.remove();
+        return;
+      }
+    });
+
+    // Remove inline scripts
+    doc.querySelectorAll('script').forEach(s => s.remove());
+    doc.querySelectorAll('style').forEach(s => s.remove());
+    doc.querySelectorAll('link[rel="stylesheet"]').forEach(l => l.remove());
+
+    return doc.body ? doc.body.innerHTML : html;
+  }
+
+  /**
+   * Filter an RSS feed's items — remove items from blocked domains.
+   */
+  function filterFeedItems(items) {
+    if (!enabled) return items;
+    return items.filter(item => {
+      if (item.link && isUrlBlocked(item.link)) return false;
+      return true;
+    });
+  }
+
+  function setEnabled(val) {
+    enabled = val;
+    try { localStorage.setItem('adblock_enabled', String(val)); } catch(e) {}
+  }
+
+  function isEnabled() { return enabled; }
+  function getBlockedCount() { return blockedCount; }
+  function resetCount() {
+    blockedCount = 0;
+    try { localStorage.setItem('adblock_count', '0'); } catch(e) {}
+  }
+
+  // ── Load custom filters from string ─────────────────────────
+  function addCustomFilters(filterText) {
+    parseFilters(filterText);
+    console.log(`[AdBlock] Added custom filters. Total network rules: ${networkRules.length}`);
+  }
+
+  return { init, isUrlBlocked, sanitizeHTML, filterFeedItems, setEnabled, isEnabled, getBlockedCount, resetCount, addCustomFilters };
+})();
+</script>
+<script>/**
+ * Extension Registry — plugin system for RSS Reader
+ *
+ * Extensions can register themselves here and get a tab in the feed list panel.
+ * Each extension provides:
+ *   - id: string
+ *   - name: string
+ *   - icon: emoji or SVG string
+ *   - color: CSS color for accent
+ *   - fetchItems(feed): Promise<Item[]>   — given a feed config, return items
+ *   - renderCard(item): HTMLElement       — renders an item card in the list
+ *   - renderReader(item): HTMLElement     — renders the full reader view
+ */
+
+const ExtensionRegistry = (() => {
+  const extensions = new Map();
+
+  function register(ext) {
+    if (!ext.id || !ext.name) throw new Error('Extension must have id and name');
+    extensions.set(ext.id, ext);
+    console.log(`[Extensions] Registered: ${ext.name}`);
+  }
+
+  function get(id) { return extensions.get(id); }
+  function getAll() { return Array.from(extensions.values()); }
+  function has(id) { return extensions.has(id); }
+
+  /**
+   * Feed type → extension mapping.
+   * A feed's `type` field determines which extension handles it.
+   * Default type is 'rss'.
+   */
+  function getExtensionForFeed(feed) {
+    const type = feed.type || 'rss';
+    return extensions.get(type) || extensions.get('rss');
+  }
+
+  return { register, get, getAll, has, getExtensionForFeed };
+})();
+
+// ── Stub templates for future extensions ────────────────────
+
+// These stubs make it easy to implement new extensions later.
+// Each stub is fully wired into the registry system.
+
+/*
+ * HOW TO ADD A NEW EXTENSION:
+ *
+ * ExtensionRegistry.register({
+ *   id: 'spotify',
+ *   name: 'Spotify',
+ *   icon: '🎵',
+ *   color: '#1db954',
+ *   feedPlaceholder: 'Spotify playlist URL or user profile',
+ *   async fetchItems(feed) {
+ *     // Use Spotify Web API or oEmbed
+ *     return [];
+ *   },
+ *   renderCard(item) {
+ *     const el = document.createElement('div');
+ *     // ...
+ *     return el;
+ *   },
+ *   renderReader(item) {
+ *     const el = document.createElement('div');
+ *     // ...
+ *     return el;
+ *   }
+ * });
+ *
+ * AVAILABLE EXTENSION STUBS (ready to implement):
+ *   - 'discord'    : Discord webhook messages (requires bot token)
+ *   - 'spotify'    : Spotify recently played / playlist (requires OAuth)
+ *   - 'apple_music': Apple Music RSS feeds (free, no auth needed!)
+ *   - 'instagram'  : Instagram Basic Display API (requires OAuth)
+ *   - 'tiktok'     : TikTok embed via oEmbed (limited)
+ *   - 'mastodon'   : Mastodon public RSS (fully free)
+ *   - 'github'     : GitHub release / commit RSS (fully free)
+ *   - 'podcast'    : iTunes/RSS podcast feeds with audio player
+ */
+</script>
+<script>/**
+ * YouTube Extension — fetches channel/playlist RSS feeds (no API key needed)
+ *
+ * YouTube exposes free public RSS feeds:
+ *   Channel:  https://www.youtube.com/feeds/videos.xml?channel_id=UC...
+ *   Playlist: https://www.youtube.com/feeds/videos.xml?playlist_id=PL...
+ *
+ * Feed config shape:
+ *   { type: 'youtube', name: 'Channel Name', url: '<youtube feed url>', channelId: '...' }
+ *
+ * Helper: given a channel URL like https://youtube.com/@mkbhd or /channel/UCxxx,
+ * we can construct the RSS URL.
+ */
+
+ExtensionRegistry.register({
+  id: 'youtube',
+  name: 'YouTube',
+  icon: `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg>`,
+  color: '#ff0000',
+  feedPlaceholder: 'https://www.youtube.com/feeds/videos.xml?channel_id=UCxxxxxx',
+
+  /**
+   * Convert a human YouTube URL to its RSS feed URL.
+   * Accepts: channel page URL, @handle URL, or a direct RSS URL.
+   */
+  resolveUrl(input) {
+    input = input.trim();
+
+    // Already a feed URL
+    if (input.includes('feeds/videos.xml')) return input;
+
+    // Channel ID: UC...
+    const channelMatch = input.match(/youtube\.com\/channel\/(UC[a-zA-Z0-9_-]+)/);
+    if (channelMatch) return `https://www.youtube.com/feeds/videos.xml?channel_id=${channelMatch[1]}`;
+
+    // @handle or /user/
+    // We can't resolve handles without the API, so return a helpful error URL
+    // Users should paste the RSS URL directly (see instructions in add-feed modal)
+    if (input.startsWith('UC') && input.length > 10) {
+      // Bare channel ID
+      return `https://www.youtube.com/feeds/videos.xml?channel_id=${input}`;
+    }
+
+    // Playlist
+    const playlistMatch = input.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+    if (playlistMatch) return `https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistMatch[1]}`;
+
+    // Return as-is and let fetch fail gracefully
+    return input;
+  },
+
+  /**
+   * Parse a YouTube Atom feed XML into item objects.
+   */
+  parseXML(xmlDoc, feedConfig) {
+    const entries = xmlDoc.querySelectorAll('entry');
+    const items = [];
+
+    // Serialize to string for regex fallback (yt: namespace not queryable)
+    const xmlStr = new XMLSerializer().serializeToString(xmlDoc);
+
+    for (const entry of entries) {
+      // Extract videoId: try querySelector variations, then regex on serialized XML
+      let videoId = entry.querySelector('videoId')?.textContent || '';
+      if (!videoId) {
+        // yt:videoId uses namespace prefix — grab from the entry's serialized XML
+        const entryStr = new XMLSerializer().serializeToString(entry);
+        const m = entryStr.match(/videoId[^>]*>([A-Za-z0-9_-]{6,})</);
+        if (m) videoId = m[1];
+      }
+      if (!videoId) {
+        // Fall back to extracting from the <id> element: "yt:video:VIDEO_ID"
+        const idText = entry.querySelector('id')?.textContent || '';
+        videoId = idText.replace('yt:video:', '').trim();
+      }
+      // Last resort: extract from a watch URL in the entry
+      if (!videoId || videoId.includes(':')) {
+        const watchMatch = xmlStr.match(/watch\?v=([A-Za-z0-9_-]{6,})/);
+        if (watchMatch) videoId = watchMatch[1];
+      }
+
+      const title = entry.querySelector('title')?.textContent || 'Untitled';
+      const published = entry.querySelector('published')?.textContent || '';
+      const updated = entry.querySelector('updated')?.textContent || published;
+      const channelName = xmlDoc.querySelector('channel > title, feed > author > name, feed > title')?.textContent || feedConfig.name;
+
+      // Description: try media:group > media:description, then summary
+      const entryStr2 = new XMLSerializer().serializeToString(entry);
+      const descMatch = entryStr2.match(/description[^>]*>([\s\S]*?)<\/[^:]*description>/);
+      const description = entry.querySelector('summary')?.textContent || (descMatch ? descMatch[1] : '') || '';
+
+      // YouTube media thumbnail — try querySelector, then regex
+      let thumbnail = entry.querySelector('thumbnail')?.getAttribute('url') || '';
+      if (!thumbnail) {
+        const thumbMatch = entryStr2.match(/thumbnail[^>]+url=["']([^"']+)["']/);
+        if (thumbMatch) thumbnail = thumbMatch[1];
+      }
+      // Always fall back to standard YouTube thumbnail URL
+      if (!thumbnail && videoId) thumbnail = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+
+      items.push({
+        id: `yt_${videoId}`,
+        type: 'youtube',
+        feedId: feedConfig.id,
+        feedName: feedConfig.name || channelName,
+        videoId,
+        title,
+        description: stripHTML(description).slice(0, 300),
+        thumbnail,
+        link: `https://www.youtube.com/watch?v=${videoId}`,
+        date: new Date(published || updated),
+        dateStr: published || updated,
+        read: false
+      });
+    }
+
+    return items;
+  },
+
+  /**
+   * Render a compact card for the article list.
+   */
+  renderCard(item, isActive, onClick) {
+    const card = document.createElement('div');
+    card.className = `yt-card${isActive ? ' active' : ''}${item.read ? '' : ' unread'}`;
+    card.dataset.id = item.id;
+
+    card.innerHTML = `
+      <div class="yt-thumbnail-wrap">
+        <img class="yt-thumbnail" src="${escHTML(item.thumbnail)}" alt="" loading="lazy"
+             onerror="this.style.display='none'">
+        <div class="yt-play-icon">
+          <svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="yt-info">
+        <div class="yt-channel">${escHTML(item.feedName)}</div>
+        <div class="yt-title">${escHTML(item.title)}</div>
+        <div class="yt-date">${formatRelativeDate(item.date)}</div>
+      </div>
+    `;
+
+    card.addEventListener('click', () => onClick(item));
+    return card;
+  },
+
+  /**
+   * Render the full reader view — embedded YouTube player.
+   */
+  renderReader(item) {
+    const el = document.createElement('div');
+
+    el.innerHTML = `
+      <div class="reader-header">
+        <div class="reader-source-line">
+          <span class="reader-source-badge" style="background:rgba(255,0,0,0.1);color:#cc0000;">
+            ${escHTML(item.feedName)}
+          </span>
+          <span class="reader-date">${formatDate(item.date)}</span>
+        </div>
+        <h1 class="reader-title">${escHTML(item.title)}</h1>
+      </div>
+      <div class="yt-embed-wrap">
+        <iframe
+          src="https://www.youtube.com/embed/${escHTML(item.videoId)}?rel=0&modestbranding=1"
+          allowfullscreen
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          title="${escHTML(item.title)}"
+        ></iframe>
+      </div>
+      ${item.description ? `<div class="reader-body"><p>${escHTML(item.description)}</p></div>` : ''}
+    `;
+
+    return el;
+  }
+});
+
+// ── Utilities (shared with app.js via global scope) ──────────
+function stripHTML(str) {
+  if (!str) return '';
+  return str.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+}
+
+function escHTML(str) {
+  if (str == null) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function formatRelativeDate(date) {
+  if (!date || isNaN(date)) return '';
+  const now = Date.now();
+  const diff = now - date.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function formatDate(date) {
+  if (!date || isNaN(date)) return '';
+  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+}
+</script>
+<script>
+/**
+ * Spotify Extension — subscribe to any public Spotify playlist, album, or user
+ * via RSSHub (rsshub.app) — no API key needed.
+ *
+ * Paste any of these as the URL when adding a Spotify feed:
+ *   Playlist:  https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M
+ *   Album:     https://open.spotify.com/album/4aawyAB9vmqN3uQ7FjRGTy
+ *   Artist:    https://open.spotify.com/artist/06HL4z0CvFAxyc27GXpf02
+ *   User:      https://open.spotify.com/user/spotify
+ */
+ExtensionRegistry.register({
+  id: 'spotify',
+  name: 'Spotify',
+  icon: `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`,
+  color: '#1db954',
+  feedPlaceholder: 'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M',
+
+  resolveUrl(input) {
+    input = input.trim();
+    if (input.includes('rsshub.app/spotify')) return input;
+    const spotifyMatch = input.match(/open\.spotify\.com\/(playlist|album|artist|user)\/([A-Za-z0-9]+)/);
+    if (spotifyMatch) {
+      const [, entityType, entityId] = spotifyMatch;
+      switch (entityType) {
+        case 'playlist': return `https://rsshub.app/spotify/playlist/${entityId}`;
+        case 'album':    return `https://rsshub.app/spotify/album/${entityId}`;
+        case 'artist':   return `https://rsshub.app/spotify/artist_album/${entityId}`;
+        case 'user':     return `https://rsshub.app/spotify/user/${entityId}`;
+      }
+    }
+    if (/^[A-Za-z0-9]{22}$/.test(input)) return `https://rsshub.app/spotify/playlist/${input}`;
+    return input;
+  },
+
+  parseXML(xmlDoc, feedConfig) {
+    const items = [];
+    const channel = xmlDoc.querySelector('channel');
+    if (!channel) return items;
+    const feedTitle = channel.querySelector('title')?.textContent || feedConfig.name;
+    for (const entry of channel.querySelectorAll('item')) {
+      const title = entry.querySelector('title')?.textContent || 'Untitled';
+      const link = entry.querySelector('link')?.textContent || '';
+      const description = entry.querySelector('description')?.textContent || '';
+      const pubDate = entry.querySelector('pubDate')?.textContent || '';
+      const guid = entry.querySelector('guid')?.textContent || link;
+      let thumbnail = '';
+      const enclosure = entry.querySelector('enclosure');
+      if (enclosure?.getAttribute('type')?.startsWith('image')) thumbnail = enclosure.getAttribute('url') || '';
+      if (!thumbnail) { const m = description.match(/<img[^>]+src=["']([^"']+)["']/i); if (m) thumbnail = m[1]; }
+      const snippet = description.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 200);
+      const id = `spotify_${btoa(unescape(encodeURIComponent(guid))).replace(/[^a-z0-9]/gi,'').slice(0,20)}`;
+      items.push({ id, type: 'spotify', feedId: feedConfig.id, feedName: feedConfig.name || feedTitle,
+        title: title.trim(), snippet, body: description, thumbnail, link,
+        date: pubDate ? new Date(pubDate) : new Date(), dateStr: pubDate, read: false });
+    }
+    return items;
+  },
+
+  renderCard(item, isActive, onClick) {
+    const card = document.createElement('div');
+    card.className = `spotify-card${isActive ? ' active' : ''}${item.read ? '' : ' unread'}`;
+    card.dataset.id = item.id;
+    card.innerHTML = `
+      <div class="spotify-card-inner">
+        ${item.thumbnail
+          ? `<img class="spotify-thumb" src="${escHTML(item.thumbnail)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+          : `<div class="spotify-thumb-placeholder"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="color:#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg></div>`}
+        <div class="spotify-info">
+          <div class="spotify-feed-name">${escHTML(item.feedName)}</div>
+          <div class="spotify-title">${escHTML(item.title)}</div>
+          ${item.snippet ? `<div class="spotify-snippet">${escHTML(item.snippet.slice(0,80))}</div>` : ''}
+          <div class="spotify-date">${formatRelativeDate(item.date)}</div>
+        </div>
+      </div>`;
+    card.addEventListener('click', () => onClick(item));
+    return card;
+  },
+
+  renderReader(item) {
+    const el = document.createElement('div');
+    el.innerHTML = `
+      <div class="reader-header">
+        <div class="reader-source-line">
+          <span class="reader-source-badge" style="background:rgba(29,185,84,0.12);color:#1db954;">${escHTML(item.feedName)}</span>
+          <span class="reader-date">${formatDate(item.date)}</span>
+        </div>
+        <h1 class="reader-title">${escHTML(item.title)}</h1>
+      </div>
+      ${item.thumbnail ? `<img class="reader-hero" src="${escHTML(item.thumbnail)}" alt="" style="max-height:280px;object-fit:cover;border-radius:12px;margin-bottom:24px;">` : ''}
+      <div class="reader-body">
+        ${item.body || `<p>${escHTML(item.snippet)}</p>`}
+        ${item.link ? `<div style="margin-top:28px;text-align:center;"><a href="${escHTML(item.link)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;background:#1db954;color:#fff;padding:12px 24px;border-radius:24px;text-decoration:none;font-weight:600;font-size:15px;"><svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>Open in Spotify</a></div>` : ''}
+      </div>`;
+    return el;
+  }
+});
+</script>
+<script>
+/**
+ * Apple Music Extension — subscribe to any Apple Music playlist, album, or top charts
+ * via Apple's free RSS Marketing Tools API — no API key needed.
+ *
+ * Paste any of these as the URL:
+ *   Top Albums (US):     https://rss.applemarketingtools.com/api/v2/us/music/most-played/25/albums.json
+ *   New Releases (US):   https://rss.applemarketingtools.com/api/v2/us/music/new-releases/albums/25/albums.json
+ *   Top Songs (UK):      https://rss.applemarketingtools.com/api/v2/gb/music/most-played/25/songs.json
+ *   Apple Music page:    https://music.apple.com/us/playlist/todays-hits/pl.f4d106fed2bd41149aaacabb233eb5eb
+ */
+ExtensionRegistry.register({
+  id: 'applemusic',
+  name: 'Apple Music',
+  icon: `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M23.994 6.124a9.23 9.23 0 0 0-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 0 0-1.546-.645 9.15 9.15 0 0 0-1.813-.23c-.05-.003-.097-.01-.144-.017H5.93a9.388 9.388 0 0 0-1.994.234 5.12 5.12 0 0 0-1.524.638C1.277 1.815.528 2.83.24 4.17A9.108 9.108 0 0 0 0 5.994v12.012c.003.24.009.48.024.72a9.3 9.3 0 0 0 .217 1.476 5.06 5.06 0 0 0 .645 1.557c.733 1.14 1.74 1.89 3.066 2.18a9.107 9.107 0 0 0 1.822.228c.063.003.124.012.186.012h12.013c.24-.003.48-.009.72-.024a9.294 9.294 0 0 0 1.476-.216 5.07 5.07 0 0 0 1.558-.646c1.14-.733 1.888-1.74 2.18-3.066a9.152 9.152 0 0 0 .228-1.822c.003-.063.012-.124.012-.186V6.012l-.013-.111zm-9.895 2.735v5.44a2.89 2.89 0 0 1-.38 1.424 2.5 2.5 0 0 1-1.04 1.006 3.266 3.266 0 0 1-1.563.38c-.994 0-1.81-.396-2.396-1.073-.55-.634-.787-1.396-.707-2.209.09-.9.52-1.63 1.205-2.162.63-.49 1.368-.72 2.195-.713.31.003.614.04.905.107V7.408c0-.268-.16-.397-.427-.34L8.11 7.79a.333.333 0 0 0-.268.32v7.21a2.872 2.872 0 0 1-.38 1.42 2.496 2.496 0 0 1-1.039 1.006 3.268 3.268 0 0 1-1.563.382c-.994 0-1.81-.397-2.397-1.074-.55-.634-.787-1.395-.707-2.208.09-.9.52-1.63 1.205-2.162.63-.49 1.368-.72 2.195-.713a3.2 3.2 0 0 1 .905.107V6.378c0-.54.368-.993.897-1.101l5.845-1.168c.617-.123 1.107.347 1.107.98v3.77h-.01z"/></svg>`,
+  color: '#fc3c44',
+  feedPlaceholder: 'https://rss.applemarketingtools.com/api/v2/us/music/most-played/25/albums.json',
+
+  resolveUrl(input) {
+    input = input.trim();
+    if (input.includes('rss.applemarketingtools.com') || input.includes('rsshub.app/apple')) return input;
+    // Apple Music playlist/album/artist page → Apple top charts (country extracted or default 'us')
+    const amMatch = input.match(/music\.apple\.com\/([a-z]{2})\/(playlist|album|artist)/i);
+    if (amMatch) {
+      const country = amMatch[1];
+      return `https://rss.applemarketingtools.com/api/v2/${country}/music/most-played/25/albums.json`;
+    }
+    // Shorthand: "new releases gb" or "top us"
+    const shortMatch = input.match(/^(new.?releases?|top.?charts?|top)\s+([a-z]{2})$/i);
+    if (shortMatch) {
+      const country = shortMatch[2].toLowerCase();
+      return /new/i.test(input)
+        ? `https://rss.applemarketingtools.com/api/v2/${country}/music/new-releases/albums/25/albums.json`
+        : `https://rss.applemarketingtools.com/api/v2/${country}/music/most-played/25/albums.json`;
+    }
+    return input;
+  },
+
+  // Apple's RSS API returns JSON, not XML — fetched via CORS proxy and parsed here
+  parseJSON(jsonData, feedConfig) {
+    const items = [];
+    const feed = jsonData.feed;
+    if (!feed) return items;
+    const feedTitle = feed.title || feedConfig.name;
+    for (const result of (feed.results || [])) {
+      const safeId = (result.id || result.name || Math.random().toString(36)).replace(/[^a-z0-9]/gi,'').slice(0,16);
+      const id = `am_${safeId}`;
+      const title = result.name || 'Untitled';
+      const artist = result.artistName || '';
+      const releaseDate = result.releaseDate || '';
+      const link = result.url || '';
+      const thumbnail = result.artworkUrl100 ? result.artworkUrl100.replace('100x100bb','400x400bb') : '';
+      const genre = (result.genres || []).map(g => g.name).filter(Boolean).join(', ');
+      const snippet = [artist, genre, releaseDate].filter(Boolean).join(' · ');
+      items.push({
+        id, type: 'applemusic', feedId: feedConfig.id, feedName: feedConfig.name || feedTitle,
+        title: `${title}${artist ? ` — ${artist}` : ''}`, snippet,
+        body: `<p><strong>${escHTML(title)}</strong>${artist ? ` by <strong>${escHTML(artist)}</strong>` : ''}</p>${genre ? `<p>Genre: ${escHTML(genre)}</p>` : ''}${releaseDate ? `<p>Released: ${escHTML(releaseDate)}</p>` : ''}`,
+        thumbnail, link, date: releaseDate ? new Date(releaseDate) : new Date(), dateStr: releaseDate, read: false
+      });
+    }
+    return items;
+  },
+
+  parseXML(xmlDoc, feedConfig) {
+    const items = [];
+    const channel = xmlDoc.querySelector('channel');
+    if (!channel) return items;
+    const feedTitle = channel.querySelector('title')?.textContent || feedConfig.name;
+    for (const entry of channel.querySelectorAll('item')) {
+      const title = entry.querySelector('title')?.textContent || 'Untitled';
+      const link = entry.querySelector('link')?.textContent || '';
+      const description = entry.querySelector('description')?.textContent || '';
+      const pubDate = entry.querySelector('pubDate')?.textContent || '';
+      const guid = entry.querySelector('guid')?.textContent || link;
+      let thumbnail = '';
+      const enclosure = entry.querySelector('enclosure');
+      if (enclosure?.getAttribute('type')?.startsWith('image')) thumbnail = enclosure.getAttribute('url') || '';
+      if (!thumbnail) { const m = description.match(/<img[^>]+src=["']([^"']+)["']/i); if (m) thumbnail = m[1]; }
+      const snippet = description.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 200);
+      const id = `am_${btoa(unescape(encodeURIComponent(guid))).replace(/[^a-z0-9]/gi,'').slice(0,20)}`;
+      items.push({ id, type: 'applemusic', feedId: feedConfig.id, feedName: feedConfig.name || feedTitle,
+        title: title.trim(), snippet, body: description, thumbnail, link,
+        date: pubDate ? new Date(pubDate) : new Date(), dateStr: pubDate, read: false });
+    }
+    return items;
+  },
+
+  renderCard(item, isActive, onClick) {
+    const card = document.createElement('div');
+    card.className = `am-card${isActive ? ' active' : ''}${item.read ? '' : ' unread'}`;
+    card.dataset.id = item.id;
+    card.innerHTML = `
+      <div class="am-card-inner">
+        ${item.thumbnail
+          ? `<img class="am-thumb" src="${escHTML(item.thumbnail)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+          : `<div class="am-thumb-placeholder"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="color:#fc3c44"><path d="M23.994 6.124a9.23 9.23 0 0 0-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 0 0-1.546-.645 9.15 9.15 0 0 0-1.813-.23c-.05-.003-.097-.01-.144-.017H5.93a9.388 9.388 0 0 0-1.994.234 5.12 5.12 0 0 0-1.524.638C1.277 1.815.528 2.83.24 4.17A9.108 9.108 0 0 0 0 5.994v12.012c.003.24.009.48.024.72a9.3 9.3 0 0 0 .217 1.476 5.06 5.06 0 0 0 .645 1.557c.733 1.14 1.74 1.89 3.066 2.18a9.107 9.107 0 0 0 1.822.228c.063.003.124.012.186.012h12.013c.24-.003.48-.009.72-.024a9.294 9.294 0 0 0 1.476-.216 5.07 5.07 0 0 0 1.558-.646c1.14-.733 1.888-1.74 2.18-3.066a9.152 9.152 0 0 0 .228-1.822c.003-.063.012-.124.012-.186V6.012l-.013-.111zm-9.895 2.735v5.44a2.89 2.89 0 0 1-.38 1.424 2.5 2.5 0 0 1-1.04 1.006 3.266 3.266 0 0 1-1.563.38c-.994 0-1.81-.396-2.396-1.073-.55-.634-.787-1.396-.707-2.209.09-.9.52-1.63 1.205-2.162.63-.49 1.368-.72 2.195-.713.31.003.614.04.905.107V7.408c0-.268-.16-.397-.427-.34L8.11 7.79a.333.333 0 0 0-.268.32v7.21a2.872 2.872 0 0 1-.38 1.42 2.496 2.496 0 0 1-1.039 1.006 3.268 3.268 0 0 1-1.563.382c-.994 0-1.81-.397-2.397-1.074-.55-.634-.787-1.395-.707-2.208.09-.9.52-1.63 1.205-2.162.63-.49 1.368-.72 2.195-.713a3.2 3.2 0 0 1 .905.107V6.378c0-.54.368-.993.897-1.101l5.845-1.168c.617-.123 1.107.347 1.107.98v3.77h-.01z"/></svg></div>`}
+        <div class="am-info">
+          <div class="am-feed-name">${escHTML(item.feedName)}</div>
+          <div class="am-title">${escHTML(item.title)}</div>
+          ${item.snippet ? `<div class="am-snippet">${escHTML(item.snippet.slice(0,80))}</div>` : ''}
+          <div class="am-date">${formatRelativeDate(item.date)}</div>
+        </div>
+      </div>`;
+    card.addEventListener('click', () => onClick(item));
+    return card;
+  },
+
+  renderReader(item) {
+    const el = document.createElement('div');
+    el.innerHTML = `
+      <div class="reader-header">
+        <div class="reader-source-line">
+          <span class="reader-source-badge" style="background:rgba(252,60,68,0.1);color:#fc3c44;">${escHTML(item.feedName)}</span>
+          <span class="reader-date">${formatDate(item.date)}</span>
+        </div>
+        <h1 class="reader-title">${escHTML(item.title)}</h1>
+      </div>
+      ${item.thumbnail ? `<div style="text-align:center;margin-bottom:24px;"><img src="${escHTML(item.thumbnail)}" alt="" style="width:220px;height:220px;object-fit:cover;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.18);"></div>` : ''}
+      <div class="reader-body">
+        ${item.body || `<p>${escHTML(item.snippet)}</p>`}
+        ${item.link ? `<div style="margin-top:28px;text-align:center;"><a href="${escHTML(item.link)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;background:#fc3c44;color:#fff;padding:12px 24px;border-radius:24px;text-decoration:none;font-weight:600;font-size:15px;"><svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M23.994 6.124a9.23 9.23 0 0 0-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 0 0-1.546-.645 9.15 9.15 0 0 0-1.813-.23c-.05-.003-.097-.01-.144-.017H5.93a9.388 9.388 0 0 0-1.994.234 5.12 5.12 0 0 0-1.524.638C1.277 1.815.528 2.83.24 4.17A9.108 9.108 0 0 0 0 5.994v12.012c.003.24.009.48.024.72a9.3 9.3 0 0 0 .217 1.476 5.06 5.06 0 0 0 .645 1.557c.733 1.14 1.74 1.89 3.066 2.18a9.107 9.107 0 0 0 1.822.228c.063.003.124.012.186.012h12.013c.24-.003.48-.009.72-.024a9.294 9.294 0 0 0 1.476-.216 5.07 5.07 0 0 0 1.558-.646c1.14-.733 1.888-1.74 2.18-3.066a9.152 9.152 0 0 0 .228-1.822c.003-.063.012-.124.012-.186V6.012l-.013-.111zm-9.895 2.735v5.44a2.89 2.89 0 0 1-.38 1.424 2.5 2.5 0 0 1-1.04 1.006 3.266 3.266 0 0 1-1.563.38c-.994 0-1.81-.396-2.396-1.073-.55-.634-.787-1.396-.707-2.209.09-.9.52-1.63 1.205-2.162.63-.49 1.368-.72 2.195-.713.31.003.614.04.905.107V7.408c0-.268-.16-.397-.427-.34L8.11 7.79a.333.333 0 0 0-.268.32v7.21a2.872 2.872 0 0 1-.38 1.42 2.496 2.496 0 0 1-1.039 1.006 3.268 3.268 0 0 1-1.563.382c-.994 0-1.81-.397-2.397-1.074-.55-.634-.787-1.395-.707-2.208.09-.9.52-1.63 1.205-2.162.63-.49 1.368-.72 2.195-.713a3.2 3.2 0 0 1 .905.107V6.378c0-.54.368-.993.897-1.101l5.845-1.168c.617-.123 1.107.347 1.107.98v3.77h-.01z"/></svg>Open in Apple Music</a></div>` : ''}
+      </div>`;
+    return el;
+  }
+});
+</script>
+<script>
+/**
+ * Threads Extension — follow any public Threads profile via RSSHub.
+ *
+ * Paste any of these as the URL:
+ *   Profile URL:  https://www.threads.net/@zuck
+ *   Handle:       @zuck  or  zuck
+ */
+ExtensionRegistry.register({
+  id: 'threads',
+  name: 'Threads',
+  icon: `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.78-.865-1.8-1.049-1.808-1.049l.006-.04c.018-.002.037-.004.056-.006 1.504-.106 3.187.604 4.123 1.975.734 1.081 1.123 2.505 1.158 4.232.03 1.468-.268 2.769-.877 3.835-.706 1.236-1.746 2.131-3.092 2.663-1.186.472-2.566.71-4.11.71h-.006zm.857-9.768c-.29-.008-.586-.005-.883.014-1.05.064-1.88.354-2.42.84-.455.395-.682.916-.655 1.508.054.98.701 1.65 1.776 1.715.158.009.315.014.47.014.947 0 1.707-.305 2.258-.904.693-.753 1.025-1.92 1.004-3.486-.512-.124-1.047-.191-1.55-.201z"/></svg>`,
+  color: '#000000',
+  feedPlaceholder: 'https://www.threads.net/@username  or  @username',
+
+  resolveUrl(input) {
+    input = input.trim();
+    if (input.includes('rsshub.app/threads')) return input;
+    const m = input.match(/threads\.net\/@([A-Za-z0-9_.]+)/);
+    if (m) return `https://rsshub.app/threads/user/${m[1]}`;
+    if (input.startsWith('@')) return `https://rsshub.app/threads/user/${input.slice(1).split('/')[0]}`;
+    if (/^[A-Za-z0-9_.]{1,30}$/.test(input)) return `https://rsshub.app/threads/user/${input}`;
+    return input;
+  },
+
+  parseXML(xmlDoc, feedConfig) {
+    const items = [];
+    const channel = xmlDoc.querySelector('channel');
+    if (!channel) return items;
+    const feedTitle = channel.querySelector('title')?.textContent || feedConfig.name;
+    for (const entry of channel.querySelectorAll('item')) {
+      const title = entry.querySelector('title')?.textContent || '';
+      const link = entry.querySelector('link')?.textContent || '';
+      const description = entry.querySelector('description')?.textContent || '';
+      const pubDate = entry.querySelector('pubDate')?.textContent || '';
+      const guid = entry.querySelector('guid')?.textContent || link;
+      let thumbnail = '';
+      const imgMatch = description.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (imgMatch) thumbnail = imgMatch[1];
+      const snippet = description.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 280);
+      const id = `threads_${btoa(unescape(encodeURIComponent(guid))).replace(/[^a-z0-9]/gi,'').slice(0,20)}`;
+      const displayTitle = (title && !title.match(/^@/)) ? title : (snippet.slice(0,80) || 'Post');
+      items.push({ id, type: 'threads', feedId: feedConfig.id, feedName: feedConfig.name || feedTitle,
+        title: displayTitle, snippet, body: description, thumbnail, link,
+        date: pubDate ? new Date(pubDate) : new Date(), dateStr: pubDate, read: false });
+    }
+    return items;
+  },
+
+  renderCard(item, isActive, onClick) {
+    const card = document.createElement('div');
+    card.className = `threads-card${isActive ? ' active' : ''}${item.read ? '' : ' unread'}`;
+    card.dataset.id = item.id;
+    card.innerHTML = `
+      <div class="threads-card-inner">
+        <div class="threads-meta">
+          <span class="threads-handle">${escHTML(item.feedName)}</span>
+          <span class="threads-dot">·</span>
+          <span class="threads-date">${formatRelativeDate(item.date)}</span>
+        </div>
+        <div class="threads-text">${escHTML(item.snippet || item.title)}</div>
+        ${item.thumbnail ? `<img class="threads-img" src="${escHTML(item.thumbnail)}" alt="" loading="lazy" onerror="this.remove()">` : ''}
+      </div>`;
+    card.addEventListener('click', () => onClick(item));
+    return card;
+  },
+
+  renderReader(item) {
+    const el = document.createElement('div');
+    el.innerHTML = `
+      <div class="reader-header">
+        <div class="reader-source-line">
+          <span class="reader-source-badge" style="background:rgba(0,0,0,0.06);color:#000;">${escHTML(item.feedName)}</span>
+          <span class="reader-date">${formatDate(item.date)}</span>
+        </div>
+        <h1 class="reader-title" style="font-size:1.1rem;font-weight:500;">${escHTML(item.title)}</h1>
+      </div>
+      <div class="reader-body">
+        ${item.body || `<p>${escHTML(item.snippet)}</p>`}
+        ${item.thumbnail ? `<img src="${escHTML(item.thumbnail)}" alt="" style="max-width:100%;border-radius:12px;margin-top:16px;">` : ''}
+        ${item.link ? `<div style="margin-top:28px;text-align:center;"><a href="${escHTML(item.link)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;background:#000;color:#fff;padding:10px 22px;border-radius:24px;text-decoration:none;font-weight:600;font-size:14px;">View on Threads</a></div>` : ''}
+      </div>`;
+    return el;
+  }
+});
+</script>
+<script>
+/**
+ * Instagram Extension — follow any public Instagram profile or hashtag via RSSHub.
+ *
+ * Paste any of these as the URL:
+ *   Profile URL:  https://www.instagram.com/natgeo/
+ *   Handle:       @natgeo  or  natgeo
+ *   Hashtag:      #photography  or  https://www.instagram.com/explore/tags/photography/
+ *
+ * Note: Instagram aggressively rate-limits scrapers. If a feed fails, try again later
+ * or self-host an RSSHub instance for better reliability.
+ */
+ExtensionRegistry.register({
+  id: 'instagram',
+  name: 'Instagram',
+  icon: `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>`,
+  color: '#e1306c',
+  feedPlaceholder: 'https://www.instagram.com/natgeo/  or  @username  or  #hashtag',
+
+  resolveUrl(input) {
+    input = input.trim();
+    if (input.includes('rsshub.app/instagram')) return input;
+    const tagMatch = input.match(/instagram\.com\/explore\/tags\/([A-Za-z0-9_]+)/);
+    if (tagMatch) return `https://rsshub.app/instagram/tag/${tagMatch[1]}`;
+    const profileMatch = input.match(/instagram\.com\/([A-Za-z0-9_.]+)\/?$/);
+    if (profileMatch && profileMatch[1] !== 'explore') return `https://rsshub.app/instagram/user/${profileMatch[1]}`;
+    if (input.startsWith('@')) return `https://rsshub.app/instagram/user/${input.slice(1).split('/')[0]}`;
+    if (input.startsWith('#')) return `https://rsshub.app/instagram/tag/${input.slice(1)}`;
+    if (/^[A-Za-z0-9_.]{1,30}$/.test(input)) return `https://rsshub.app/instagram/user/${input}`;
+    return input;
+  },
+
+  parseXML(xmlDoc, feedConfig) {
+    const items = [];
+    const channel = xmlDoc.querySelector('channel');
+    if (!channel) return items;
+    const feedTitle = channel.querySelector('title')?.textContent || feedConfig.name;
+    for (const entry of channel.querySelectorAll('item')) {
+      const title = entry.querySelector('title')?.textContent || '';
+      const link = entry.querySelector('link')?.textContent || '';
+      const description = entry.querySelector('description')?.textContent || '';
+      const pubDate = entry.querySelector('pubDate')?.textContent || '';
+      const guid = entry.querySelector('guid')?.textContent || link;
+      let thumbnail = '';
+      const imgMatch = description.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (imgMatch) thumbnail = imgMatch[1];
+      if (!thumbnail) {
+        const entryStr = new XMLSerializer().serializeToString(entry);
+        const mm = entryStr.match(/media:content[^>]+url=["']([^"']+)["']/i) || entryStr.match(/enclosure[^>]+url=["']([^"']+)["']/i);
+        if (mm) thumbnail = mm[1];
+      }
+      const snippet = description.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 280);
+      const id = `ig_${btoa(unescape(encodeURIComponent(guid))).replace(/[^a-z0-9]/gi,'').slice(0,20)}`;
+      items.push({ id, type: 'instagram', feedId: feedConfig.id, feedName: feedConfig.name || feedTitle,
+        title: snippet.slice(0,80) || title || 'Post', snippet, body: description, thumbnail, link,
+        date: pubDate ? new Date(pubDate) : new Date(), dateStr: pubDate, read: false });
+    }
+    return items;
+  },
+
+  renderCard(item, isActive, onClick) {
+    const card = document.createElement('div');
+    card.className = `ig-card${isActive ? ' active' : ''}${item.read ? '' : ' unread'}`;
+    card.dataset.id = item.id;
+    card.innerHTML = `
+      ${item.thumbnail ? `<div class="ig-photo-wrap"><img class="ig-photo" src="${escHTML(item.thumbnail)}" alt="" loading="lazy" onerror="this.closest('.ig-photo-wrap').remove()"></div>` : ''}
+      <div class="ig-card-body">
+        <div class="ig-meta">
+          <span class="ig-handle">${escHTML(item.feedName)}</span>
+          <span class="ig-dot">·</span>
+          <span class="ig-date">${formatRelativeDate(item.date)}</span>
+        </div>
+        <div class="ig-caption">${escHTML(item.snippet || item.title)}</div>
+      </div>`;
+    card.addEventListener('click', () => onClick(item));
+    return card;
+  },
+
+  renderReader(item) {
+    const el = document.createElement('div');
+    el.innerHTML = `
+      <div class="reader-header">
+        <div class="reader-source-line">
+          <span class="reader-source-badge" style="background:rgba(225,48,108,0.1);color:#e1306c;">${escHTML(item.feedName)}</span>
+          <span class="reader-date">${formatDate(item.date)}</span>
+        </div>
+      </div>
+      ${item.thumbnail ? `<div style="text-align:center;margin-bottom:20px;"><img src="${escHTML(item.thumbnail)}" alt="" style="max-width:100%;border-radius:12px;max-height:500px;object-fit:contain;"></div>` : ''}
+      <div class="reader-body">
+        ${item.body || (item.snippet ? `<p>${escHTML(item.snippet)}</p>` : '')}
+        ${item.link ? `<div style="margin-top:28px;text-align:center;"><a href="${escHTML(item.link)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;padding:10px 22px;border-radius:24px;text-decoration:none;font-weight:600;font-size:14px;"><svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>View on Instagram</a></div>` : ''}
+      </div>`;
+    return el;
+  }
+});
+</script>
+<script>/**
+ * RSS Reader — Core App
+ * Gatsby-styled, uBlock-powered, extensible feed reader.
+ */
+
+const App = (() => {
+  // ── State ───────────────────────────────────────────────────
+
+  let state = {
+    feeds: [],
+    items: [],          // all fetched items across all feeds
+    activeFeedId: 'all', // 'all' | feed.id
+    activeItemId: null,
+    filter: 'all',       // 'all' | 'unread'
+    searchQuery: '',
+    loading: new Set(),  // feed IDs currently loading
+    errors: new Map(),   // feedId → error message
+    lastRefresh: null
+  };
+
+  // ── Default Feeds ────────────────────────────────────────────
+
+  const DEFAULT_FEEDS = [
+    { id: 'hacker_news', name: 'Hacker News', url: 'https://news.ycombinator.com/rss', type: 'rss', favicon: 'https://news.ycombinator.com/favicon.ico' },
+    { id: 'smashing_mag', name: 'Smashing Magazine', url: 'https://www.smashingmagazine.com/feed/', type: 'rss', favicon: 'https://www.smashingmagazine.com/favicon.ico' },
+    { id: 'css_tricks', name: 'CSS-Tricks', url: 'https://css-tricks.com/feed/', type: 'rss', favicon: 'https://css-tricks.com/favicon.ico' },
+    { id: 'verge', name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', type: 'rss', favicon: 'https://www.theverge.com/favicon.ico' },
+    { id: 'wired', name: 'Wired', url: 'https://www.wired.com/feed/rss', type: 'rss', favicon: 'https://www.wired.com/favicon.ico' },
+    { id: 'fireship_yt', name: 'Fireship', url: 'https://www.youtube.com/feeds/videos.xml?channel_id=UCsBjURrPoezykLs9EqgamOA', type: 'youtube', favicon: '' },
+    { id: 'linus_yt', name: 'Linus Tech Tips', url: 'https://www.youtube.com/feeds/videos.xml?channel_id=UCXuqSBlHAE6Xw-yeJA0Tunw', type: 'youtube', favicon: '' },
+  ];
+
+  // ── Storage ──────────────────────────────────────────────────
+
+  const STORAGE_KEY = 'rss_reader_v2';
+
+  function loadStorage() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        state.feeds = data.feeds || [...DEFAULT_FEEDS];
+        // Restore read status from saved items
+        const readIds = new Set(data.readIds || []);
+        state._readIds = readIds;
+        return;
+      }
+    } catch(e) {}
+    state.feeds = [...DEFAULT_FEEDS];
+    state._readIds = new Set();
+  }
+
+  function saveStorage() {
+    try {
+      const readIds = state.items.filter(i => i.read).map(i => i.id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        feeds: state.feeds,
+        readIds
+      }));
+    } catch(e) {}
+  }
+
+  // ── RSS/Atom/YouTube Fetch & Parse ───────────────────────────
+
+  // CORS proxies — ordered by reliability (fastest/most reliable first)
+  const CORS_PROXIES = [
+    {
+      // corsproxy.io — fast, returns raw body directly
+      build: url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+      extract: async res => res.text(),
+      timeout: 10000
+    },
+    {
+      // rss2json — great for RSS feeds specifically, returns JSON
+      build: url => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`,
+      extract: async res => {
+        const data = await res.json();
+        if (data.status !== 'ok') throw new Error('rss2json error: ' + data.message);
+        return rss2jsonToXML(data);
+      },
+      timeout: 10000
+    },
+    {
+      // allorigins — fallback, returns JSON: { contents: '<xml>...' }
+      build: url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+      extract: async res => {
+        const data = await res.json();
+        if (!data || !data.contents) throw new Error('Empty allorigins response');
+        return data.contents;
+      },
+      timeout: 8000
+    },
+  ];
+
+  // Convert rss2json response to RSS XML string so parseRSSFeed can handle it
+  function rss2jsonToXML(data) {
+    const items = (data.items || []).map(item => {
+      // Extract YouTube video ID from guid ("yt:video:VIDEO_ID") or link
+      let videoId = '';
+      if (item.guid && item.guid.startsWith('yt:video:')) {
+        videoId = item.guid.replace('yt:video:', '').trim();
+      } else if (item.link && item.link.includes('watch?v=')) {
+        const m = item.link.match(/watch\?v=([A-Za-z0-9_-]+)/);
+        if (m) videoId = m[1];
+      }
+      // Embed yt:videoId so YouTube parser can detect and extract it
+      const ytTag = videoId ? `<yt:videoId>${videoId}</yt:videoId>` : '';
+      return `
+      <item>
+        <title><![CDATA[${item.title || ''}]]></title>
+        <link>${escHTML(item.link || '')}</link>
+        <description><![CDATA[${item.description || item.content || ''}]]></description>
+        <pubDate>${item.pubDate || ''}</pubDate>
+        <author>${escHTML(item.author || '')}</author>
+        <guid>${escHTML(item.guid || item.link || '')}</guid>
+        ${item.thumbnail ? `<media:thumbnail url="${escHTML(item.thumbnail)}"/>` : ''}
+        ${ytTag}
+      </item>`;
+    }).join('');
+    return `<?xml version="1.0"?><rss version="2.0" xmlns:yt="http://www.youtube.com/xml/schemas/2015"><channel>
+      <title>${escHTML(data.feed?.title || '')}</title>
+      ${items}
+    </channel></rss>`;
+  }
+
+  // Returns true if text looks like an HTML error/bot-block page rather than feed content
+  function looksLikeErrorPage(text) {
+    if (!text) return true;
+    const t = text.trim().toLowerCase();
+    if (t.startsWith('<?xml') || t.startsWith('<rss') || t.startsWith('<feed') || t.startsWith('<channel')) return false;
+    if (t.startsWith('<html') || t.startsWith('<!doctype') || t.startsWith('<!')) return true;
+    return false;
+  }
+
+  async function fetchWithProxy(url) {
+    const errors = [];
+    // For YouTube feeds, rss2json handles them much better than raw proxies
+    const isYouTubeUrl = url.includes('youtube.com/feeds') || url.includes('youtube.com/watch');
+    const proxies = isYouTubeUrl
+      ? [CORS_PROXIES[1], CORS_PROXIES[0], CORS_PROXIES[2]]  // rss2json first for YouTube
+      : CORS_PROXIES;
+
+    for (const proxy of proxies) {
+      try {
+        const proxyUrl = proxy.build(url);
+        const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(proxy.timeout || 10000) });
+        if (!res.ok) { errors.push(`${proxyUrl.split('?')[0]}: HTTP ${res.status}`); continue; }
+        const text = await proxy.extract(res);
+        if (!text || text.length < 50) { errors.push('Empty response'); continue; }
+        // Reject HTML error/bot-block pages (e.g. Google's "Sorry..." for YouTube)
+        if (looksLikeErrorPage(text)) { errors.push(`${proxyUrl.split('?')[0]}: got HTML instead of feed`); continue; }
+        return text;
+      } catch(e) {
+        errors.push(e.message);
+      }
+    }
+    // Last resort: direct fetch (works if the feed has permissive CORS headers)
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.text();
+    } catch(e) {
+      errors.push('Direct: ' + e.message);
+    }
+    throw new Error(`Could not fetch feed. Tried all proxies.\n${errors.join('\n')}`);
+  }
+
+  function parseRSSFeed(xmlText, feedConfig) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xmlText, 'application/xml');
+    const parserError = doc.querySelector('parsererror');
+    if (parserError) {
+      // Try again as text/html (some feeds are served with wrong content-type)
+      const doc2 = parser.parseFromString(xmlText, 'text/html');
+      if (!doc2.querySelector('channel, feed')) throw new Error('Invalid XML — could not parse feed');
+    }
+
+    // Detect YouTube feed
+    const isYouTubeFeed = feedConfig.type === 'youtube'
+      || feedConfig.url.includes('youtube.com/feeds')
+      || xmlText.includes('yt:videoId')
+      || xmlText.includes('www.youtube.com/watch');
+
+    if (isYouTubeFeed) {
+      // If it's an Atom feed (has <entry> tags), use the YouTube extension parser
+      if (doc.querySelector('entry')) {
+        const ext = ExtensionRegistry.get('youtube');
+        if (ext) return ext.parseXML(doc, feedConfig);
+      }
+      // Otherwise it's RSS format from rss2json — parse <item> tags directly
+      const channel = doc.querySelector('channel');
+      const rssItems = channel ? channel.querySelectorAll('item') : [];
+      const items = [];
+      for (const item of rssItems) {
+        const title = item.querySelector('title')?.textContent || 'Untitled';
+        const link = item.querySelector('link')?.textContent || '#';
+        const pubDate = item.querySelector('pubDate')?.textContent || '';
+        const thumbnail = item.querySelector('thumbnail')?.getAttribute('url')
+          || item.querySelector('enclosure')?.getAttribute('thumbnail') || '';
+
+        // Extract videoId from yt:videoId tag (via regex since namespace), or from link/guid
+        let videoId = '';
+        const itemStr = new XMLSerializer().serializeToString(item);
+        const vidMatch = itemStr.match(/videoId[^>]*>([A-Za-z0-9_-]{6,})</);
+        if (vidMatch) videoId = vidMatch[1];
+        if (!videoId) {
+          const watchMatch = link.match(/watch\?v=([A-Za-z0-9_-]+)/);
+          if (watchMatch) videoId = watchMatch[1];
+        }
+        if (!videoId) {
+          const guid = item.querySelector('guid')?.textContent || '';
+          const guidMatch = guid.match(/yt:video:([A-Za-z0-9_-]+)/);
+          if (guidMatch) videoId = guidMatch[1];
+        }
+
+        const finalThumbnail = thumbnail || (videoId ? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` : '');
+        const uid = `yt_${videoId || hashStr(title)}`;
+
+        items.push({
+          id: uid,
+          type: 'youtube',
+          feedId: feedConfig.id,
+          feedName: feedConfig.name,
+          videoId,
+          title: title.trim(),
+          description: '',
+          thumbnail: finalThumbnail,
+          link: videoId ? `https://www.youtube.com/watch?v=${videoId}` : link,
+          date: parseDateFlexible(pubDate),
+          dateStr: pubDate,
+          read: state._readIds ? state._readIds.has(uid) : false
+        });
+      }
+      return items;
+    }
+
+    // Standard RSS 2.0 or Atom
+    const isAtom = !!doc.querySelector('feed');
+    const items = [];
+
+    if (isAtom) {
+      const entries = doc.querySelectorAll('entry');
+      for (const entry of entries) {
+        const title = entry.querySelector('title')?.textContent || 'Untitled';
+        const link = entry.querySelector('link[rel="alternate"]')?.getAttribute('href')
+          || entry.querySelector('link')?.getAttribute('href')
+          || entry.querySelector('id')?.textContent || '#';
+        const summary = entry.querySelector('summary, content')?.textContent || '';
+        const published = entry.querySelector('published, updated')?.textContent || '';
+        const author = entry.querySelector('author name')?.textContent || '';
+        const id = entry.querySelector('id')?.textContent || link;
+
+        items.push(buildItem(id, title, link, summary, published, author, feedConfig));
+      }
+    } else {
+      // RSS 2.0
+      const channel = doc.querySelector('channel');
+      if (!channel) return [];
+      const rssItems = channel.querySelectorAll('item');
+      for (const item of rssItems) {
+        const title = item.querySelector('title')?.textContent || 'Untitled';
+        const link = item.querySelector('link')?.textContent
+          || item.querySelector('link')?.getAttribute('href') || '#';
+        const description = item.querySelector('description')?.textContent || '';
+        const content = item.querySelector('content\\:encoded, encoded')?.textContent || '';
+        const pubDate = item.querySelector('pubDate, dc\\:date, date')?.textContent || '';
+        const author = item.querySelector('author, dc\\:creator, creator')?.textContent || '';
+        const guid = item.querySelector('guid')?.textContent || link;
+
+        // Media thumbnail
+        const mediaThumbnail = item.querySelector('media\\:thumbnail, thumbnail')?.getAttribute('url') || '';
+        const enclosure = item.querySelector('enclosure[type^="image"]')?.getAttribute('url') || '';
+        const thumbnail = mediaThumbnail || enclosure;
+
+        const built = buildItem(guid, title, link, content || description, pubDate, author, feedConfig);
+        if (thumbnail) built.thumbnail = thumbnail;
+        items.push(built);
+      }
+    }
+
+    return items;
+  }
+
+  function buildItem(id, title, link, body, dateStr, author, feedConfig) {
+    const cleanBody = AdBlock.sanitizeHTML(body, link);
+    const snippet = stripHTML(body).slice(0, 200).trim();
+
+    // Try to find first image in body
+    let thumbnail = '';
+    try {
+      const imgMatch = body.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (imgMatch) thumbnail = imgMatch[1];
+    } catch(e) {}
+
+    const date = parseDateFlexible(dateStr);
+    const uid = `${feedConfig.id}_${hashStr(id || title)}`;
+
+    return {
+      id: uid,
+      type: 'rss',
+      feedId: feedConfig.id,
+      feedName: feedConfig.name,
+      title: title.trim(),
+      link: link.trim(),
+      body: cleanBody,
+      snippet,
+      thumbnail,
+      author: author.trim(),
+      date,
+      dateStr,
+      read: state._readIds ? state._readIds.has(uid) : false
+    };
+  }
+
+  function parseDateFlexible(str) {
+    if (!str) return new Date(0);
+    try { return new Date(str); } catch(e) { return new Date(0); }
+  }
+
+  function hashStr(str) {
+    let h = 0;
+    for (let i = 0; i < Math.min(str.length, 64); i++) {
+      h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+    }
+    return Math.abs(h).toString(36);
+  }
+
+  // ── Feed Auto-Discovery ──────────────────────────────────────
+  // Given any URL (homepage, article, etc.), find its RSS/Atom feed.
+
+  // Well-known feed paths to probe as a fallback
+  const FEED_PATHS = [
+    '/feed', '/feed.xml', '/rss', '/rss.xml', '/atom.xml', '/feed/rss',
+    '/blog/feed', '/blog/rss', '/news/feed', '/news/rss',
+    '/?feed=rss2', '/?feed=rss', '/?feed=atom',
+    '/index.xml', '/feeds/posts/default', '/feed/atom'
+  ];
+
+  // Known feed URLs for sites whose homepages are too large or don't expose <link> tags
+  const KNOWN_FEEDS = {
+    'washingtonpost.com':    'https://feeds.washingtonpost.com/rss/national',
+    'nytimes.com':           'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',
+    'theguardian.com':       'https://www.theguardian.com/world/rss',
+    'bbc.com':               'https://feeds.bbci.co.uk/news/rss.xml',
+    'bbc.co.uk':             'https://feeds.bbci.co.uk/news/rss.xml',
+    'reuters.com':           'https://feeds.reuters.com/reuters/topNews',
+    'techcrunch.com':        'https://techcrunch.com/feed/',
+    'arstechnica.com':       'https://feeds.arstechnica.com/arstechnica/index',
+    'slashdot.org':          'https://rss.slashdot.org/Slashdot/slashdot',
+    'reddit.com':            'https://www.reddit.com/.rss',
+    'medium.com':            'https://medium.com/feed/',
+    'cnn.com':               'https://rss.cnn.com/rss/cnn_topstories.rss',
+    'apnews.com':            'https://apnews.com/feed',
+    'npr.org':               'https://feeds.npr.org/1001/rss.xml',
+    'wired.com':             'https://www.wired.com/feed/rss',
+    'theredhandfiles.com':   'https://www.theredhandfiles.com/feed/',
+    'kottke.org':            'https://feeds.kottke.org/main',
+    'daring fireball.net':   'https://daringfireball.net/feeds/main',
+    'daringfireball.net':    'https://daringfireball.net/feeds/main',
+    'sixcolors.com':         'https://sixcolors.com/feed/',
+    'stratechery.com':       'https://stratechery.com/feed/',
+    'marginalia.nu':         'https://www.marginalia.nu/log/atom.xml',
+  };
+
+  async function discoverFeedUrl(inputUrl) {
+    // If it already looks like a feed URL, return as-is
+    if (/\.(xml|rss|atom)($|\?)/.test(inputUrl)) return inputUrl;
+    if (inputUrl.includes('/feed') || inputUrl.includes('/rss') || inputUrl.includes('/atom')) return inputUrl;
+    if (inputUrl.includes('youtube.com/feeds')) return inputUrl;
+    if (inputUrl.includes('feedburner.com')) return inputUrl;
+    // Known RSS subdomains like rss.slashdot.org, feeds.feedburner.com
+    if (/^https?:\/\/(rss|feeds)\./i.test(inputUrl)) return inputUrl;
+
+    // Check known-feeds lookup before making any network requests
+    try {
+      const hostname = new URL(inputUrl).hostname.replace(/^www\./, '');
+      if (KNOWN_FEEDS[hostname]) return KNOWN_FEEDS[hostname];
+    } catch(e) {}
+
+    // Fetch the homepage HTML and look for <link rel="alternate" type="application/rss+xml">
+    // Note: we fetch directly here (not via fetchWithProxy) because fetchWithProxy rejects HTML
+    // pages via looksLikeErrorPage — but for discovery we WANT the HTML to scan for <link> tags.
+    let html = '';
+    try {
+      const proxies = [
+        `https://corsproxy.io/?${encodeURIComponent(inputUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(inputUrl)}`,
+      ];
+      for (const proxyUrl of proxies) {
+        try {
+          const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
+          if (res.ok) {
+            const text = await res.text();
+            if (text && text.length > 50) { html = text; break; }
+          }
+        } catch(e) { /* try next proxy */ }
+      }
+    } catch(e) {}
+    if (!html) return inputUrl; // can't fetch, try the URL as-is
+
+    // Parse discovered feed links from <link> tags
+    const linkMatches = [...html.matchAll(/<link[^>]+type=["'](application\/(?:rss|atom)\+xml|text\/xml)["'][^>]*href=["']([^"']+)["']/gi)];
+    const linkMatches2 = [...html.matchAll(/<link[^>]+href=["']([^"']+)["'][^>]+type=["'](application\/(?:rss|atom)\+xml|text\/xml)["']/gi)];
+
+    const discovered = [
+      ...linkMatches.map(m => m[2]),
+      ...linkMatches2.map(m => m[1])
+    ].filter(Boolean);
+
+    if (discovered.length > 0) {
+      // Resolve relative URLs
+      const base = new URL(inputUrl);
+      const resolved = discovered.map(href => {
+        try { return new URL(href, base).href; } catch(e) { return href; }
+      });
+      return resolved[0];
+    }
+
+    // Fallback: try common feed paths on the same origin
+    const base = new URL(inputUrl);
+    const origin = base.origin;
+    for (const path of FEED_PATHS) {
+      const candidate = origin + path;
+      try {
+        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(candidate)}`, { signal: AbortSignal.timeout(5000) });
+        if (res.ok) {
+          const text = await res.text();
+          if (text.includes('<rss') || text.includes('<feed') || text.includes('<channel')) {
+            return candidate;
+          }
+        }
+      } catch(e) { /* try next */ }
+    }
+
+    // Nothing found — return original URL and let the parser try
+    return inputUrl;
+  }
+
+  // Extract a site name from a URL for use as the feed name
+  function siteNameFromUrl(url) {
+    try {
+      const host = new URL(url).hostname.replace(/^www\./, '');
+      return host.split('.')[0].charAt(0).toUpperCase() + host.split('.')[0].slice(1);
+    } catch(e) { return url; }
+  }
+
+  // ── Feed Management ──────────────────────────────────────────
+
+  // Returns true if a URL looks like it's already a direct feed URL (not a homepage)
+  function looksLikeFeedUrl(url) {
+    if (!url) return false;
+    if (/\.(xml|rss|atom)($|\?)/i.test(url)) return true;
+    if (url.includes('youtube.com/feeds')) return true;
+    if (url.includes('feedburner.com')) return true;
+    if (/^https?:\/\/(rss|feeds)\./i.test(url)) return true;
+    if (url.includes('/feed') || url.includes('/rss') || url.includes('/atom')) return true;
+    return false;
+  }
+
+  async function fetchFeed(feed) {
+    state.loading.add(feed.id);
+    renderSidebar();
+
+    try {
+      let url = feed.url;
+
+      // Let YouTube extension resolve its URL if needed
+      if (feed.type === 'youtube') {
+        const ext = ExtensionRegistry.get('youtube');
+        if (ext) url = ext.resolveUrl(url);
+
+        // If still a @handle, /user/, or /c/ URL, scrape the channel page to find the channel ID
+        if (url.includes('youtube.com/@') || url.includes('youtube.com/user/') || url.includes('youtube.com/c/')) {
+          try {
+            const pageRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(12000) });
+            if (pageRes.ok) {
+              const html = await pageRes.text();
+              // Use canonical URL or og:url — these always point to /channel/UC...
+              // More reliable than "channelId" in JSON which can be a related channel
+              const canonMatch = html.match(/rel="canonical"\s+href="https:\/\/www\.youtube\.com\/channel\/(UC[a-zA-Z0-9_-]+)"/);
+              const ogMatch = !canonMatch && html.match(/og:url[^>]+content="https:\/\/www\.youtube\.com\/channel\/(UC[a-zA-Z0-9_-]+)"/);
+              const channelId = canonMatch?.[1] || ogMatch?.[1];
+              if (channelId) {
+                const resolvedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+                console.log(`[Feed] Resolved @handle to channel feed: ${resolvedUrl}`);
+                feed.url = resolvedUrl;
+                const feedInState = state.feeds.find(f => f.id === feed.id);
+                if (feedInState) feedInState.url = resolvedUrl;
+                saveStorage();
+                url = resolvedUrl;
+              }
+            }
+          } catch(e) { /* fall through */ }
+        }
+      }
+
+      // If this looks like a homepage URL (not a direct feed), run auto-discovery
+      // first so we save the correct feed URL and don't keep re-failing.
+      if (feed.type !== 'youtube' && !looksLikeFeedUrl(url)) {
+        try {
+          const discovered = await discoverFeedUrl(url);
+          if (discovered && discovered !== url) {
+            console.log(`[Feed] Auto-discovered RSS URL for ${feed.name}: ${discovered}`);
+            // Persist the discovered URL back into the feed so future refreshes use it
+            feed.url = discovered;
+            const feedInState = state.feeds.find(f => f.id === feed.id);
+            if (feedInState) feedInState.url = discovered;
+            saveStorage();
+            url = discovered;
+          }
+        } catch(e) {
+          // Discovery failed — proceed with original URL and let parser handle it
+        }
+      }
+
+      let xmlText = await fetchWithProxy(url);
+
+      // If we got back HTML instead of XML (still on a homepage), try discovery from page content
+      if (feed.type !== 'youtube' && xmlText) {
+        const trimmed = xmlText.trim();
+        const looksLikeFeed = trimmed.startsWith('<?xml') || trimmed.startsWith('<rss') ||
+                              trimmed.startsWith('<feed') || trimmed.startsWith('<channel');
+        if (!looksLikeFeed && (trimmed.startsWith('<html') || trimmed.startsWith('<!') ||
+            trimmed.toLowerCase().startsWith('<!doctype') || trimmed.toLowerCase().includes('<html'))) {
+          // Got HTML — try to pull a feed URL from the page's <link> tags
+          const linkMatches = [...trimmed.matchAll(/<link[^>]+type=["'](application\/(?:rss|atom)\+xml|text\/xml)["'][^>]*href=["']([^"']+)["']/gi)];
+          const linkMatches2 = [...trimmed.matchAll(/<link[^>]+href=["']([^"']+)["'][^>]+type=["'](application\/(?:rss|atom)\+xml|text\/xml)["']/gi)];
+          const discovered2 = [...linkMatches.map(m => m[2]), ...linkMatches2.map(m => m[1])].filter(Boolean);
+          if (discovered2.length > 0) {
+            try {
+              const base = new URL(url);
+              const resolvedUrl = new URL(discovered2[0], base).href;
+              console.log(`[Feed] Discovered RSS from fetched HTML for ${feed.name}: ${resolvedUrl}`);
+              feed.url = resolvedUrl;
+              const feedInState = state.feeds.find(f => f.id === feed.id);
+              if (feedInState) feedInState.url = resolvedUrl;
+              saveStorage();
+              xmlText = await fetchWithProxy(resolvedUrl);
+            } catch(e) { /* proceed with what we have */ }
+          }
+        }
+      }
+
+      const newItems = parseRSSFeed(xmlText, feed);
+
+      // Filter via adblock
+      const filtered = AdBlock.filterFeedItems(newItems);
+
+      // Merge: keep existing read state, deduplicate by id
+      const existingIds = new Set(state.items.filter(i => i.feedId === feed.id).map(i => i.id));
+      const merged = state.items.filter(i => i.feedId !== feed.id);
+      for (const item of filtered) {
+        if (!existingIds.has(item.id)) {
+          merged.push(item);
+        } else {
+          // Preserve existing item (keeps read state)
+          const existing = state.items.find(i => i.id === item.id);
+          merged.push(existing || item);
+        }
+      }
+
+      state.items = merged.sort((a, b) => b.date - a.date);
+      state.errors.delete(feed.id);
+
+      // Auto-fetch favicon if the feed doesn't have one yet
+      if (!feed.favicon) {
+        fetchFaviconForFeed(feed, xmlText);
+      }
+
+      saveStorage();
+      showToast(`✓ ${feed.name} refreshed (${filtered.length} items)`, 'success');
+
+    } catch(err) {
+      console.error(`[Feed] Error fetching ${feed.name}:`, err);
+      // Give user a friendlier hint
+      let hint = err.message || 'Unknown error';
+      if (hint.includes('Could not fetch')) hint = 'Could not reach feed — check the URL or try again later';
+      else if (hint.includes('Invalid XML')) hint = 'Feed URL returned invalid data — make sure it\'s a valid RSS/Atom URL';
+      else if (hint.includes('NetworkError') || hint.includes('Failed to fetch')) hint = 'Network error — check your internet connection';
+      state.errors.set(feed.id, hint);
+      showToast(`⚠ "${feed.name}": ${hint}`, 'error');
+    } finally {
+      state.loading.delete(feed.id);
+      renderAll();
+    }
+  }
+
+  // Fetch and store a favicon for the feed using Google's favicon service as primary source,
+  // with a fallback to the feed XML's own <image><url> or <icon> tag.
+  async function fetchFaviconForFeed(feed, xmlText) {
+    try {
+      // Try to get the site origin from the feed URL
+      let siteOrigin = '';
+      try {
+        const feedUrl = new URL(feed.url);
+        // For YouTube feeds use youtube.com
+        if (feedUrl.hostname.includes('youtube.com')) {
+          siteOrigin = 'youtube.com';
+        } else {
+          siteOrigin = feedUrl.hostname.replace(/^www\./, '');
+        }
+      } catch(e) {}
+
+      // Also try to extract favicon from the RSS <image><url> or Atom <icon> tag in the XML
+      if (xmlText) {
+        const imgMatch = xmlText.match(/<image[^>]*>[\s\S]*?<url[^>]*>\s*([^\s<]+)\s*<\/url>/i);
+        const iconMatch = xmlText.match(/<icon[^>]*>\s*([^\s<]+)\s*<\/icon>/i);
+        const xmlFavicon = imgMatch?.[1] || iconMatch?.[1] || '';
+        if (xmlFavicon && xmlFavicon.startsWith('http') && !xmlFavicon.includes('feedburner')) {
+          feed.favicon = xmlFavicon;
+          const feedInState = state.feeds.find(f => f.id === feed.id);
+          if (feedInState) feedInState.favicon = xmlFavicon;
+          saveStorage();
+          renderSidebar();
+          return;
+        }
+      }
+
+      // Use Google's favicon service — reliable, no CORS issues, returns a real icon
+      if (siteOrigin) {
+        const googleFaviconUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(siteOrigin)}&sz=32`;
+        feed.favicon = googleFaviconUrl;
+        const feedInState = state.feeds.find(f => f.id === feed.id);
+        if (feedInState) feedInState.favicon = googleFaviconUrl;
+        saveStorage();
+        renderSidebar();
+      }
+    } catch(e) { /* favicon is non-critical, ignore errors */ }
+  }
+
+  function addFeed(feedData) {
+    const id = feedData.id || `feed_${Date.now()}`;
+    const feed = { ...feedData, id };
+    state.feeds.push(feed);
+    saveStorage();
+    renderSidebar();
+    fetchFeed(feed);
+    return feed;
+  }
+
+  function removeFeed(feedId) {
+    state.feeds = state.feeds.filter(f => f.id !== feedId);
+    state.items = state.items.filter(i => i.feedId !== feedId);
+    if (state.activeFeedId === feedId) state.activeFeedId = 'all';
+    if (state.activeItemId) {
+      const item = state.items.find(i => i.id === state.activeItemId);
+      if (!item) state.activeItemId = null;
+    }
+    saveStorage();
+    renderAll();
+    showToast('Feed removed', 'success');
+  }
+
+  async function refreshAll() {
+    if (state.feeds.length === 0) {
+      showToast('No feeds to refresh', 'warning');
+      return;
+    }
+    state.lastRefresh = new Date();
+    // Fetch all concurrently
+    await Promise.allSettled(state.feeds.map(f => fetchFeed(f)));
+  }
+
+  // ── Filtering & Search ───────────────────────────────────────
+
+  function getVisibleItems() {
+    let items = state.items;
+
+    // Filter by active feed
+    if (state.activeFeedId !== 'all') {
+      items = items.filter(i => i.feedId === state.activeFeedId);
+    }
+
+    // Filter by read status
+    if (state.filter === 'unread') {
+      items = items.filter(i => !i.read);
+    }
+
+    // Search
+    if (state.searchQuery) {
+      const q = state.searchQuery.toLowerCase();
+      items = items.filter(i =>
+        i.title.toLowerCase().includes(q) ||
+        i.snippet.toLowerCase().includes(q) ||
+        (i.feedName && i.feedName.toLowerCase().includes(q))
+      );
+    }
+
+    return items;
+  }
+
+  function markRead(itemId) {
+    const item = state.items.find(i => i.id === itemId);
+    if (item) {
+      item.read = true;
+      saveStorage();
+    }
+  }
+
+  function markAllRead() {
+    const visibleItems = getVisibleItems();
+    visibleItems.forEach(i => { i.read = true; });
+    saveStorage();
+    renderArticleList();
+    renderSidebar();
+    showToast('All marked as read', 'success');
+  }
+
+  // ── DOM References ───────────────────────────────────────────
+
+  let dom = {};
+
+  function initDOM() {
+    dom = {
+      articlesList: document.getElementById('articles-list'),
+      feedListTitle: document.getElementById('feed-list-title'),
+      feedListMeta: document.getElementById('feed-list-meta'),
+      feedItems: document.getElementById('sidebar-feeds'),
+      readerContent: document.getElementById('reader-content'),
+      readerPlaceholder: document.getElementById('reader-placeholder'),
+      readerToolbar: document.getElementById('reader-toolbar'),
+      readerOpenBtn: document.getElementById('reader-open-btn'),
+      searchInput: document.getElementById('search-input'),
+      adblockToggle: document.getElementById('adblock-toggle'),
+      adblockToggleSwitch: document.getElementById('adblock-toggle-switch'),
+      adblockCount: document.getElementById('adblock-count'),
+      filterAll: document.getElementById('filter-all'),
+      filterUnread: document.getElementById('filter-unread'),
+      markAllReadBtn: document.getElementById('mark-all-read'),
+      refreshBtn: document.getElementById('refresh-btn'),
+      addFeedBtn: document.getElementById('add-feed-btn'),
+      totalFeedsEl: document.getElementById('total-feeds'),
+      totalItemsEl: document.getElementById('total-items'),
+    };
+  }
+
+  // ── Render: Sidebar ──────────────────────────────────────────
+
+  function renderSidebar() {
+    const container = dom.feedItems;
+    if (!container) return;
+
+    // Unread counts per feed
+    const unreadCounts = {};
+    state.feeds.forEach(f => {
+      unreadCounts[f.id] = state.items.filter(i => i.feedId === f.id && !i.read).length;
+    });
+    const totalUnread = state.items.filter(i => !i.read).length;
+
+    // "All Feeds" entry
+    const allHtml = `
+      <div class="feed-item${state.activeFeedId === 'all' ? ' active' : ''}" data-feed-id="all">
+        <div class="feed-favicon-placeholder" style="background:#0f4d2e">A</div>
+        <span class="feed-name">All Feeds</span>
+        ${totalUnread > 0 ? `<span class="feed-count">${totalUnread}</span>` : ''}
+      </div>
+    `;
+
+    // Group feeds by type
+    const rssFeedsHtml = state.feeds
+      .filter(f => f.type !== 'youtube')
+      .map(f => renderFeedItem(f, unreadCounts[f.id] || 0))
+      .join('');
+
+    const ytFeedsHtml = state.feeds
+      .filter(f => f.type === 'youtube')
+      .map(f => renderFeedItem(f, unreadCounts[f.id] || 0))
+      .join('');
+
+    container.innerHTML = allHtml
+      + (rssFeedsHtml ? `<div class="sidebar-section-header">RSS Feeds <button onclick="App.openAddFeedModal('rss')" title="Add RSS feed">+</button></div>${rssFeedsHtml}` : `<div class="sidebar-section-header">RSS Feeds <button onclick="App.openAddFeedModal('rss')" title="Add RSS feed">+</button></div>`)
+      + (ytFeedsHtml ? `<div class="sidebar-section-header" style="margin-top:8px">YouTube <button onclick="App.openAddFeedModal('youtube')" title="Add YouTube channel">+</button></div>${ytFeedsHtml}` : `<div class="sidebar-section-header" style="margin-top:8px">YouTube <button onclick="App.openAddFeedModal('youtube')" title="Add YouTube channel">+</button></div>`);
+
+    // Attach feed click handlers
+    container.querySelectorAll('.feed-item').forEach(el => {
+      el.addEventListener('click', e => {
+        if (e.target.closest('.feed-action-btn')) return;
+        const feedId = el.dataset.feedId;
+        selectFeed(feedId);
+      });
+    });
+
+    // Stats
+    if (dom.totalFeedsEl) dom.totalFeedsEl.textContent = state.feeds.length;
+    if (dom.totalItemsEl) dom.totalItemsEl.textContent = state.items.length;
+
+    // Adblock
+    if (dom.adblockToggleSwitch) {
+      dom.adblockToggleSwitch.classList.toggle('on', AdBlock.isEnabled());
+    }
+    if (dom.adblockCount) {
+      dom.adblockCount.textContent = `${AdBlock.getBlockedCount()} blocked`;
+    }
+  }
+
+  function renderFeedItem(feed, unreadCount) {
+    const isActive = state.activeFeedId === feed.id;
+    const isLoading = state.loading.has(feed.id);
+    const hasError = state.errors.has(feed.id);
+
+    const faviconEl = feed.favicon
+      ? `<img class="feed-favicon" src="${escHTML(feed.favicon)}" alt="" onerror="this.style.display='none'">`
+      : `<div class="feed-favicon-placeholder" style="background:${typeColor(feed.type)}">${escHTML((feed.name || '?')[0].toUpperCase())}</div>`;
+
+    const badge = isLoading
+      ? `<div class="spinner" style="width:14px;height:14px;border-width:2px"></div>`
+      : hasError
+        ? `<span title="${escHTML(state.errors.get(feed.id))}" style="color:#c0392b;font-size:14px">⚠</span>`
+        : unreadCount > 0
+          ? `<span class="feed-count">${unreadCount}</span>`
+          : '';
+
+    return `
+      <div class="feed-item${isActive ? ' active' : ''}" data-feed-id="${escHTML(feed.id)}">
+        ${faviconEl}
+        <span class="feed-name">${escHTML(feed.name)}</span>
+        ${badge}
+        <div class="feed-item-actions">
+          <button class="feed-action-btn" onclick="App.refreshFeed('${escHTML(feed.id)}')" title="Refresh">↻</button>
+          <button class="feed-action-btn" onclick="App.confirmRemoveFeed('${escHTML(feed.id)}')" title="Remove">✕</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function typeColor(type) {
+    const colors = { rss: '#ff6600', youtube: '#ff0000', discord: '#5865f2', spotify: '#1db954', applemusic: '#fc3c44', threads: '#000000', instagram: '#e1306c', default: '#0f4d2e' };
+    return colors[type] || colors.default;
+  }
+
+  // ── Render: Article List ─────────────────────────────────────
+
+  function renderArticleList() {
+    const container = dom.articlesList;
+    if (!container) return;
+
+    const items = getVisibleItems();
+    const activeFeed = state.activeFeedId === 'all' ? null : state.feeds.find(f => f.id === state.activeFeedId);
+
+    // Update header
+    if (dom.feedListTitle) {
+      dom.feedListTitle.textContent = activeFeed ? activeFeed.name : 'All Feeds';
+    }
+    if (dom.feedListMeta) {
+      const unread = items.filter(i => !i.read).length;
+      dom.feedListMeta.textContent = `${items.length} items${unread > 0 ? ` · ${unread} unread` : ''}`;
+    }
+
+    if (items.length === 0) {
+      const isLoading = state.loading.size > 0;
+      container.innerHTML = isLoading
+        ? `<div class="loading-row"><div class="spinner"></div><span>Loading feeds…</span></div>`
+        : `<div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+              <path d="M6 3h12M6 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V6a3 3 0 0 0-3-3M8 10h8M8 14h5"/>
+            </svg>
+            <h3>${state.searchQuery ? 'No results found' : 'No articles yet'}</h3>
+            <p>${state.searchQuery ? 'Try a different search term.' : 'Add a feed and click Refresh to get started.'}</p>
+           </div>`;
+      return;
+    }
+
+    container.innerHTML = '';
+
+    for (const item of items) {
+      const isActive = item.id === state.activeItemId;
+
+      // Route to extension renderer if type has one registered
+      const extTypes = ['youtube', 'spotify', 'applemusic', 'threads', 'instagram'];
+      if (extTypes.includes(item.type)) {
+        const ext = ExtensionRegistry.get(item.type);
+        if (ext) {
+          const card = ext.renderCard(item, isActive, selectItem);
+          if (isActive) card.classList.add('active');
+          container.appendChild(card);
+        }
+        continue;
+      }
+
+      // Standard RSS card
+      const card = document.createElement('div');
+      card.className = `article-card${isActive ? ' active' : ''}${item.read ? '' : ' unread'}`;
+      card.dataset.id = item.id;
+
+      const showSource = state.activeFeedId === 'all';
+      const thumbHtml = item.thumbnail
+        ? `<img class="article-thumbnail" src="${escHTML(item.thumbnail)}" alt="" loading="lazy" onerror="this.remove()">`
+        : '';
+
+      card.innerHTML = `
+        <div class="article-card-meta">
+          ${!item.read ? '<div class="unread-dot"></div>' : ''}
+          ${showSource ? `<span class="article-source">${escHTML(item.feedName)}</span><span class="article-date">·</span>` : ''}
+          <span class="article-date">${formatRelativeDate(item.date)}</span>
+        </div>
+        ${thumbHtml}
+        <div class="article-title">${escHTML(item.title)}</div>
+        <div class="article-snippet">${escHTML(item.snippet)}</div>
+      `;
+
+      card.addEventListener('click', () => selectItem(item));
+      container.appendChild(card);
+    }
+  }
+
+  // ── Render: Article Reader ───────────────────────────────────
+
+  function renderReader(item) {
+    const placeholder = dom.readerPlaceholder;
+    const content = dom.readerContent;
+    const toolbar = dom.readerToolbar;
+
+    if (!item) {
+      placeholder.classList.remove('hidden');
+      content.classList.add('hidden');
+      if (dom.readerOpenBtn) dom.readerOpenBtn.href = '#';
+      return;
+    }
+
+    placeholder.classList.add('hidden');
+    content.classList.remove('hidden');
+
+    if (dom.readerOpenBtn) {
+      dom.readerOpenBtn.href = item.link || '#';
+      dom.readerOpenBtn.target = '_blank';
+      dom.readerOpenBtn.rel = 'noopener noreferrer';
+    }
+
+    // Extension-rendered types (YouTube, Spotify, Apple Music, Threads, Instagram)
+    const extTypes = ['youtube', 'spotify', 'applemusic', 'threads', 'instagram'];
+    if (extTypes.includes(item.type)) {
+      const ext = ExtensionRegistry.get(item.type);
+      if (ext) {
+        content.innerHTML = '';
+        content.appendChild(ext.renderReader(item));
+        content.scrollTop = 0;
+        return;
+      }
+    }
+
+    // Standard RSS reader
+    const heroHtml = item.thumbnail
+      ? `<img class="reader-hero" src="${escHTML(item.thumbnail)}" alt="" onerror="this.remove()">`
+      : '';
+
+    const authorHtml = item.author ? `<div class="reader-author">By ${escHTML(item.author)}</div>` : '';
+
+    content.innerHTML = `
+      <div class="reader-header">
+        <div class="reader-source-line">
+          <span class="reader-source-badge">${escHTML(item.feedName)}</span>
+          <span class="reader-date">${formatDate(item.date)}</span>
+        </div>
+        <h1 class="reader-title">${escHTML(item.title)}</h1>
+        ${authorHtml}
+      </div>
+      ${heroHtml}
+      <div class="reader-body">${item.body || `<p>${escHTML(item.snippet)}</p>`}</div>
+    `;
+
+    content.scrollTop = 0;
+  }
+
+  // ── Select ───────────────────────────────────────────────────
+
+  function selectFeed(feedId) {
+    state.activeFeedId = feedId;
+    state.activeItemId = null;
+    renderAll();
+  }
+
+  function selectItem(item) {
+    state.activeItemId = item.id;
+    markRead(item.id);
+    renderArticleList();
+    renderReader(item);
+    renderSidebar();
+  }
+
+  // ── Full Render ──────────────────────────────────────────────
+
+  function renderAll() {
+    renderSidebar();
+    renderArticleList();
+    const activeItem = state.activeItemId ? state.items.find(i => i.id === state.activeItemId) : null;
+    renderReader(activeItem || null);
+  }
+
+  // ── Modals ───────────────────────────────────────────────────
+
+  function openAddFeedModal(defaultType = 'rss') {
+    closeModal();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'modal-overlay';
+
+    const FEED_TYPE_LABELS = {
+      rss:        'RSS / Atom',
+      youtube:    'YouTube',
+      spotify:    'Spotify',
+      applemusic: 'Apple Music',
+      threads:    'Threads',
+      instagram:  'Instagram',
+    };
+    const typeOptions = Object.entries(FEED_TYPE_LABELS).map(([t, label]) =>
+      `<option value="${t}"${t === defaultType ? ' selected' : ''}>${label}</option>`
+    ).join('');
+
+    const initialNote = getFeedTypeNote(defaultType);
+    const initialPlaceholder = getFeedTypePlaceholder(defaultType);
+
+    overlay.innerHTML = `
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">Add Feed</span>
+          <button class="modal-close" onclick="App.closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Feed Type</label>
+            <select id="modal-feed-type" onchange="App.onFeedTypeChange(this.value)">
+              ${typeOptions}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Feed Name</label>
+            <input type="text" id="modal-feed-name" placeholder="e.g. My Playlist">
+          </div>
+          <div class="form-group">
+            <label>URL</label>
+            <input type="url" id="modal-feed-url" placeholder="${initialPlaceholder}">
+          </div>
+          <div id="modal-feed-note">${initialNote}</div>
+          <div id="modal-error" style="color:#c0392b;font-size:13px;display:none"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="App.closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="App.submitAddFeed()">Add Feed</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+    document.getElementById('modal-feed-url')?.focus();
+  }
+
+  function onFeedTypeChange(type) {
+    const urlInput = document.getElementById('modal-feed-url');
+    const noteEl = document.getElementById('modal-feed-note');
+    if (urlInput) urlInput.placeholder = type === 'youtube'
+      ? 'https://www.youtube.com/feeds/videos.xml?channel_id=UC…'
+      : 'Paste any website URL — e.g. nytimes.com';
+    if (noteEl) {
+      noteEl.innerHTML = type === 'youtube'
+        ? `<div style="font-size:12px;color:#78757a;background:#f5f5f5;padding:10px 12px;border-radius:4px;line-height:1.5;">
+            <strong>YouTube RSS URL format:</strong><br>
+            Channel: <code>https://www.youtube.com/feeds/videos.xml?channel_id=UC…</code><br>
+            <em>Find channel ID: go to channel → View Source → search "channelId"</em>
+           </div>`
+        : `<div style="font-size:12px;color:#78757a;background:#f5f5f5;padding:10px 12px;border-radius:4px;line-height:1.6;">
+            Just paste a website URL like <strong>nytimes.com</strong> or <strong>slashdot.org</strong> — the reader will automatically find the RSS feed.
+            You can also paste a direct feed URL like <code>https://example.com/feed.xml</code>.
+           </div>`;
+    }
+  }
+
+  async function submitAddFeed() {
+    const type = document.getElementById('modal-feed-type')?.value || 'rss';
+    const name = document.getElementById('modal-feed-name')?.value?.trim();
+    let url = document.getElementById('modal-feed-url')?.value?.trim();
+    const errorEl = document.getElementById('modal-error');
+    const submitBtn = document.querySelector('#modal-overlay .btn-primary');
+
+    if (!url) {
+      if (errorEl) { errorEl.textContent = 'Please enter a URL.'; errorEl.style.display = 'block'; }
+      return;
+    }
+
+    // Auto-add https:// if missing
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+    // Basic URL validation
+    try { new URL(url); } catch(e) {
+      if (errorEl) { errorEl.textContent = 'Please enter a valid URL.'; errorEl.style.display = 'block'; }
+      return;
+    }
+
+    // For RSS feeds, run auto-discovery if it looks like a homepage
+    if (type === 'rss') {
+      if (submitBtn) { submitBtn.textContent = 'Searching…'; submitBtn.disabled = true; }
+      if (errorEl) { errorEl.style.display = 'none'; }
+
+      try {
+        const discovered = await discoverFeedUrl(url);
+        if (discovered !== url) {
+          url = discovered;
+          // Update the input so user can see what was found
+          const urlInput = document.getElementById('modal-feed-url');
+          if (urlInput) urlInput.value = url;
+        }
+      } catch(e) { /* proceed with original url */ }
+
+      if (submitBtn) { submitBtn.textContent = 'Add Feed'; submitBtn.disabled = false; }
+    }
+
+    // Check for duplicate
+    if (state.feeds.find(f => f.url === url)) {
+      if (errorEl) { errorEl.textContent = 'This feed is already added.'; errorEl.style.display = 'block'; }
+      if (submitBtn) { submitBtn.textContent = 'Add Feed'; submitBtn.disabled = false; }
+      return;
+    }
+
+    const feedName = name || siteNameFromUrl(url);
+    const feed = { id: `feed_${Date.now()}`, name: feedName, url, type };
+    closeModal();
+    addFeed(feed);
+  }
+
+  function closeModal() {
+    const overlay = document.getElementById('modal-overlay');
+    if (overlay) overlay.remove();
+  }
+
+  function confirmRemoveFeed(feedId) {
+    const feed = state.feeds.find(f => f.id === feedId);
+    if (!feed) return;
+    if (confirm(`Remove "${feed.name}"? This will also remove all its articles from the reader.`)) {
+      removeFeed(feedId);
+    }
+  }
+
+  // ── Toast ────────────────────────────────────────────────────
+
+  function showToast(message, type = '') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast${type ? ' ' + type : ''}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  // ── Event Wiring ─────────────────────────────────────────────
+
+  function wireEvents() {
+    // Search
+    dom.searchInput?.addEventListener('input', e => {
+      state.searchQuery = e.target.value;
+      renderArticleList();
+    });
+
+    // Filter buttons
+    dom.filterAll?.addEventListener('click', () => {
+      state.filter = 'all';
+      dom.filterAll.classList.add('active');
+      dom.filterUnread?.classList.remove('active');
+      renderArticleList();
+    });
+
+    dom.filterUnread?.addEventListener('click', () => {
+      state.filter = 'unread';
+      dom.filterUnread.classList.add('active');
+      dom.filterAll?.classList.remove('active');
+      renderArticleList();
+    });
+
+    // Mark all read
+    dom.markAllReadBtn?.addEventListener('click', markAllRead);
+
+    // Refresh all
+    dom.refreshBtn?.addEventListener('click', refreshAll);
+
+    // Add feed button
+    dom.addFeedBtn?.addEventListener('click', () => openAddFeedModal('rss'));
+
+    // Adblock toggle
+    dom.adblockToggle?.addEventListener('click', () => {
+      AdBlock.setEnabled(!AdBlock.isEnabled());
+      renderSidebar();
+      showToast(AdBlock.isEnabled() ? 'Ad blocking enabled' : 'Ad blocking disabled', AdBlock.isEnabled() ? 'success' : 'warning');
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT') return;
+      if (e.key === 'r' || e.key === 'R') refreshAll();
+      if (e.key === 'Escape') closeModal();
+    });
+  }
+
+  // ── Init ─────────────────────────────────────────────────────
+
+  async function init() {
+    AdBlock.init();
+    loadStorage();
+    initDOM();
+    wireEvents();
+    renderAll();
+
+    // Auto-refresh on load
+    showToast('Loading feeds…');
+    await refreshAll();
+  }
+
+  // ── Public API ───────────────────────────────────────────────
+
+  return {
+    init,
+    openAddFeedModal,
+    closeModal,
+    onFeedTypeChange,
+    submitAddFeed,
+    confirmRemoveFeed,
+    refreshFeed: (id) => {
+      const feed = state.feeds.find(f => f.id === id);
+      if (feed) fetchFeed(feed);
+    },
+    showToast,
+    getState: () => state
+  };
+})();
+
+// ── Shared utilities (also used by extensions) ───────────────
+
+function stripHTML(str) {
+  if (!str) return '';
+  return str.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
+}
+
+function escHTML(str) {
+  if (str == null) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function formatRelativeDate(date) {
+  if (!date || isNaN(date.getTime())) return '';
+  const now = Date.now();
+  const diff = now - date.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function formatDate(date) {
+  if (!date || isNaN(date.getTime())) return '';
+  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+// Boot on DOM ready
+document.addEventListener('DOMContentLoaded', () => App.init());
+
+// ── Panel Resize ─────────────────────────────────────────────────────────────
+
+(function initPanelResize() {
+  const LAYOUT_KEY = 'rss_reader_layout';
+  const MIN_SIDEBAR = 180;
+  const MAX_SIDEBAR = 480;
+  const MIN_ARTICLE_LIST = 260;
+  const MAX_ARTICLE_LIST = 700;
+
+  // Restore saved sizes
+  function loadLayout() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}');
+      if (saved.sidebarWidth) {
+        document.documentElement.style.setProperty('--sidebar-width', saved.sidebarWidth + 'px');
+        updateSidebarHandlePos(saved.sidebarWidth);
+      }
+      if (saved.articleListWidth) {
+        document.documentElement.style.setProperty('--article-list-width', saved.articleListWidth + 'px');
+      }
+    } catch(e) {}
+  }
+
+  function saveLayout() {
+    try {
+      const sw = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width'));
+      const aw = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--article-list-width'));
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify({ sidebarWidth: sw, articleListWidth: aw }));
+    } catch(e) {}
+  }
+
+  function updateSidebarHandlePos(width) {
+    const handle = document.getElementById('sidebar-resize-handle');
+    if (handle) handle.style.left = (width - 2) + 'px';
+  }
+
+  // ── Sidebar resize handle ─────────────────────────────────────
+  const sidebarHandle = document.getElementById('sidebar-resize-handle');
+  if (sidebarHandle) {
+    sidebarHandle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 280;
+      sidebarHandle.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+
+      function onMove(e) {
+        const dx = e.clientX - startX;
+        const newWidth = Math.min(MAX_SIDEBAR, Math.max(MIN_SIDEBAR, startWidth + dx));
+        document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
+        updateSidebarHandlePos(newWidth);
+      }
+
+      function onUp() {
+        sidebarHandle.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        saveLayout();
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
+  // ── Article-list resize handle ────────────────────────────────
+  const articleHandle = document.getElementById('article-list-resize-handle');
+  if (articleHandle) {
+    articleHandle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--article-list-width')) || 380;
+      articleHandle.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+
+      function onMove(e) {
+        const dx = e.clientX - startX;
+        const newWidth = Math.min(MAX_ARTICLE_LIST, Math.max(MIN_ARTICLE_LIST, startWidth + dx));
+        document.documentElement.style.setProperty('--article-list-width', newWidth + 'px');
+      }
+
+      function onUp() {
+        articleHandle.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        saveLayout();
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
+  // Load on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadLayout);
+  } else {
+    loadLayout();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "rss-reader",
+  "version": "1.0.0",
+  "description": "Lightweight private RSS reader with uBlock-style ad filtering",
+  "scripts": {
+    "start": "python3 -m http.server 8080 --bind 127.0.0.1 --directory \"$(dirname $0)\"",
+    "stop": "lsof -ti:8080 | xargs kill -9 2>/dev/null && echo 'Server stopped'",
+    "restart": "npm run stop && sleep 1 && npm start"
+  }
+}
